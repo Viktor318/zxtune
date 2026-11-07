@@ -1,0 +1,27 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"PO-Revision-Date: 2026-11-07 22:30+0100\n"
+"Last-Translator: Viktor318\n"
+"Language-Team: Hungarian\n"
+"Language: hu\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Failed to find symbol '{}' in shared object."
+msgstr "A szimbólum nem található a megosztott objektumban: '{}'."
+
+msgid "Failed to load shared object '{0}' ({1})."
+msgstr "A megosztott objektum nem tölthető be: '{0}' ({1})."
+
+msgid "Failed to load dynamic library '{}' by any of the alternative names."
+msgstr "A dinamikus könyvtár egyik lehetséges néven sem tölthető be: '{}'."
+
+msgid "Failed to find symbol '{}' in dynamic library."
+msgstr "A szimbólum nem található a dinamikus könyvtárban: '{}'."
+
+msgid "Failed to load dynamic library '{0}' (error code is {1})."
+msgstr "A dinamikus könyvtár nem tölthető be: '{0}' (hibakód: {1})."

@@ -1,0 +1,24 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"PO-Revision-Date: 2026-11-07 22:35+0100\n"
+"Last-Translator: Viktor318\n"
+"Language-Team: Hungarian\n"
+"Language: hu\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "None of the additional files {} were resolved."
+msgstr "A kiegészítő fájlok egyike sem található: {}."
+
+msgid "Failed to resolve additional files."
+msgstr "A kiegészítő fájlok nem találhatók."
+
+msgid "Failed to find module at specified location."
+msgstr "A megadott helyen nincs modul."
+
+msgid "Failed to resolve subpath '{}'."
+msgstr "Az útvonalrész nem található: '{}'."

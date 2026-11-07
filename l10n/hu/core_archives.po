@@ -1,0 +1,29 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"PO-Revision-Date: 2026-11-07 22:30+0100\n"
+"Last-Translator: Viktor318\n"
+"Language-Team: Hungarian\n"
+"Language: hu\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "{} processing"
+msgstr "{} feldolgozása"
+
+msgid "{0} processing at {1}"
+msgstr "{0} feldolgozása ({1})"
+
+msgid "{0} processing for {1}"
+msgstr "{0} feldolgozása: {1}"
+
+msgid "{0} processing for {1} at {2}"
+msgstr "{0} feldolgozása: {1} ({2})"
+
+msgid "Specified minimal scan size ({0}). Should be more than {1}."
+msgstr ""
+"A megadott legkisebb keresési méret ({0}) túl kicsi. Nagyobbnak kell lennie, "
+"mint {1}."

@@ -1,4 +1,4 @@
-l10n_languages := ru
+l10n_languages := ru hu
 
 l10n_dir = $(dirs.root)/l10n
 

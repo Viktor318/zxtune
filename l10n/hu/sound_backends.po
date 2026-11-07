@@ -1,0 +1,211 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"PO-Revision-Date: 2026-11-07 22:30+0100\n"
+"Last-Translator: Viktor318\n"
+"Language-Team: Hungarian\n"
+"Language: hu\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "ALSA sound system backend"
+msgstr "ALSA hangrendszer-kimenet"
+
+msgid "Error in ALSA backend: {}."
+msgstr "Hiba az ALSA kimenetben: {}."
+
+msgid "Error in ALSA backend while working with device '{0}': {1}."
+msgstr "Hiba az ALSA kimenetben ('{0}' eszköz): {1}."
+
+msgid "No suitable formats supported by ALSA."
+msgstr "Az ALSA egyetlen megfelelő formátumot sem támogat."
+
+msgid "Failed to found mixer '{}' for ALSA backend."
+msgstr "Az ALSA kimenethez nem található keverő: '{}'."
+
+msgid "Failed to set volume: gain is out of range."
+msgstr ""
+"A hangerő nem állítható be: az erősítés a megengedett tartományon kívül esik."
+
+msgid "ALSA backend error: latency ({0}) is out of range ({1}..{2})."
+msgstr ""
+"Hiba az ALSA kimenetben: a késleltetés ({0}) a megengedett tartományon kívül "
+"esik ({1}..{2})."
+
+msgid "No suitable output devices found"
+msgstr "Nincs megfelelő kimeneti eszköz"
+
+msgid "Real AY via LPT backend"
+msgstr "Valódi AY chip LPT porton"
+
+msgid "Real AY via LPT is not supported for this module."
+msgstr "Ehhez a modulhoz nem használható a valódi AY chip LPT porton."
+
+msgid "Failed to initialize playback."
+msgstr "A lejátszás előkészítése nem sikerült."
+
+msgid "Failed to finalize playback."
+msgstr "A lejátszás lezárása nem sikerült."
+
+msgid "Failed to pause playback."
+msgstr "A lejátszás nem szüneteltethető."
+
+msgid "Failed to resume playback."
+msgstr "A lejátszás nem folytatható."
+
+msgid "Failed to stop playback."
+msgstr "A lejátszás nem állítható le."
+
+msgid "Failed to set playback position."
+msgstr "A lejátszási pozíció nem állítható be."
+
+msgid "DirectSound support backend."
+msgstr "DirectSound kimenet."
+
+msgid "Error in DirectSound backend: {}."
+msgstr "Hiba a DirectSound kimenetben: {}."
+
+msgid "DirectSound backend error: latency ({0}) is out of range ({1}..{2})."
+msgstr ""
+"Hiba a DirectSound kimenetben: a késleltetés ({0}) a megengedett tartományon "
+"kívül esik ({1}..{2})."
+
+msgid "Output filename template is not specified."
+msgstr "Nincs megadva a kimeneti fájlnévsablon."
+
+msgid "FLAC support backend."
+msgstr "FLAC kimenet."
+
+msgid "Error in FLAC backend."
+msgstr "Hiba a FLAC kimenetben."
+
+msgid "Error in FLAC backend (code {})."
+msgstr "Hiba a FLAC kimenetben (hibakód: {})."
+
+msgid "MP3 support backend"
+msgstr "MP3 kimenet"
+
+msgid "Error in MP3 backend: {}."
+msgstr "Hiba az MP3 kimenetben: {}."
+
+msgid "MP3 backend error: invalid bitrate mode '{}'."
+msgstr "Hiba az MP3 kimenetben: érvénytelen bitrátamód: '{}'."
+
+msgid "MP3 backend error: bitrate ({0}) is out of range ({1}..{2})."
+msgstr ""
+"Hiba az MP3 kimenetben: a bitráta ({0}) a megengedett tartományon kívül esik "
+"({1}..{2})."
+
+msgid "MP3 backend error: quality ({0}) is out of range ({1}..{2})."
+msgstr ""
+"Hiba az MP3 kimenetben: a minőség ({0}) a megengedett tartományon kívül esik "
+"({1}..{2})."
+
+msgid "MP3 backend error: invalid channels mode '{}'."
+msgstr "Hiba az MP3 kimenetben: érvénytelen csatornamód: '{}'."
+
+msgid "Null output backend"
+msgstr "Néma kimenet"
+
+msgid "OGG support backend"
+msgstr "OGG kimenet"
+
+msgid "Error in OGG backend: code {}."
+msgstr "Hiba az OGG kimenetben, hibakód: {}."
+
+msgid "OGG backend error: invalid mode '{}'."
+msgstr "Hiba az OGG kimenetben: érvénytelen mód: '{}'."
+
+msgid "OGG backend error: bitrate ({0}) is out of range ({1}..{2})."
+msgstr ""
+"Hiba az OGG kimenetben: a bitráta ({0}) a megengedett tartományon kívül esik "
+"({1}..{2})."
+
+msgid "OGG backend error: quality ({0}) is out of range ({1}..{2})."
+msgstr ""
+"Hiba az OGG kimenetben: a minőség ({0}) a megengedett tartományon kívül esik "
+"({1}..{2})."
+
+msgid "OpenAL backend"
+msgstr "OpenAL kimenet"
+
+msgid "Error in OpenAL backend: {}."
+msgstr "Hiba az OpenAL kimenetben: {}."
+
+msgid "Unknown error in OpenAL backend."
+msgstr "Ismeretlen hiba az OpenAL kimenetben."
+
+msgid "OpenAL backend error: buffers count ({0}) is out of range ({1}..{2})."
+msgstr ""
+"Hiba az OpenAL kimenetben: a pufferek száma ({0}) a megengedett tartományon "
+"kívül esik ({1}..{2})."
+
+msgid "OSS sound system backend"
+msgstr "OSS hangrendszer-kimenet"
+
+msgid "Error in OSS backend while working with device '{0}': {1}."
+msgstr "Hiba az OSS kimenetben ('{0}' eszköz): {1}."
+
+msgid "No suitable formats supported by OSS."
+msgstr "Az OSS egyetlen megfelelő formátumot sem támogat."
+
+msgid "PulseAudio support backend"
+msgstr "PulseAudio kimenet"
+
+msgid "Error in PulseAudio backend: {}."
+msgstr "Hiba a PulseAudio kimenetben: {}."
+
+msgid "Unknown error in PulseAudio backend."
+msgstr "Ismeretlen hiba a PulseAudio kimenetben."
+
+msgid "SDL support backend"
+msgstr "SDL kimenet"
+
+msgid "SDL backend error: buffers count ({0}) is out of range ({1}..{2})."
+msgstr ""
+"Hiba az SDL kimenetben: a pufferek száma ({0}) a megengedett tartományon kívül"
+" esik ({1}..{2})."
+
+msgid "Error in SDL backend: {}."
+msgstr "Hiba az SDL kimenetben: {}."
+
+msgid "Unknown error in SDL backend."
+msgstr "Ismeretlen hiba az SDL kimenetben."
+
+msgid "Backend '{}' not registered."
+msgstr "Nincs ilyen kimenet: '{}'."
+
+msgid "Failed to create backend '{}'."
+msgstr "A kimenet nem hozható létre: '{}'."
+
+msgid "Not supported in current configuration"
+msgstr "A jelenlegi beállításokkal nem támogatott"
+
+msgid "Failed to get volume in invalid state."
+msgstr "Érvénytelen állapotban a hangerő nem kérdezhető le."
+
+msgid "Failed to set volume in invalid state."
+msgstr "Érvénytelen állapotban a hangerő nem állítható be."
+
+msgid "WAV support backend"
+msgstr "WAV kimenet"
+
+msgid "WAV conversion is not supported on non-seekable streams."
+msgstr "WAV-ba konvertálni csak pozicionálható kimenetre lehet."
+
+msgid "Win32 sound system backend"
+msgstr "Win32 hangrendszer-kimenet"
+
+msgid "Error in Win32 backend: code {}."
+msgstr "Hiba a Win32 kimenetben, hibakód: {}."
+
+msgid "Error in Win32 backend: {}."
+msgstr "Hiba a Win32 kimenetben: {}."
+
+msgid "Win32 backend error: buffers count ({0}) is out of range ({1}..{2})."
+msgstr ""
+"Hiba a Win32 kimenetben: a pufferek száma ({0}) a megengedett tartományon "
+"kívül esik ({1}..{2})."
