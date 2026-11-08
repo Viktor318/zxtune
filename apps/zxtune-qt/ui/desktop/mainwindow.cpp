@@ -41,6 +41,7 @@
 #include <QtCore/QUrl>
 #include <QtGui/QCloseEvent>
 #include <QtGui/QDesktopServices>
+#include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QToolBar>
@@ -106,6 +107,13 @@ namespace
       Require(connect(actionReportBug, &QAction::triggered, this, &DesktopMainWindowImpl::ReportIssue));
       Require(connect(actionAboutQt, &QAction::triggered, this, &DesktopMainWindowImpl::ShowAboutQt));
       Require(connect(actionPreferences, &QAction::triggered, this, &DesktopMainWindowImpl::ShowPreferences));
+      // mixer page applicable to the current tune
+      ActionMixer = new QAction(this);
+      ActionMixer->setMenuRole(QAction::NoRole);
+      Controls->GetActionsMenu()->addSeparator();
+      Controls->GetActionsMenu()->addAction(ActionMixer);
+      Require(connect(ActionMixer, &QAction::triggered, this, &DesktopMainWindowImpl::ShowMixer));
+      SetMixerActionText();
       if (Update::CheckOperation* op = Update::CheckOperation::Create(*this))
       {
         Require(connect(actionCheckUpdates, &QAction::triggered, op, &Update::CheckOperation::Execute));
@@ -130,6 +138,8 @@ namespace
       Require(connect(MultiPlaylist, &Playlist::UI::ContainerView::Deactivated, Playback, &PlaybackSupport::ResetItem));
       Require(connect(Playback, &PlaybackSupport::OnStartModule, this, &DesktopMainWindowImpl::StartModule));
       Require(connect(Playback, &PlaybackSupport::OnStopModule, this, &DesktopMainWindowImpl::StopModule));
+      Require(connect(Playback, &PlaybackSupport::OnPauseModule, this, [this]() { PlayState.Paused = true; }));
+      Require(connect(Playback, &PlaybackSupport::OnResumeModule, this, [this]() { PlayState.Paused = false; }));
       Require(connect(Playback, &PlaybackSupport::ErrorOccurred, this, &DesktopMainWindowImpl::ShowError));
       Require(connect(actionAddFiles, &QAction::triggered, MultiPlaylist, &Playlist::UI::ContainerView::AddFiles));
       Require(connect(actionAddFolder, &QAction::triggered, MultiPlaylist, &Playlist::UI::ContainerView::AddFolder));
@@ -178,6 +188,7 @@ namespace
       {
         Dbg("Retranslate main UI");
         retranslateUi(this);
+        SetMixerActionText();
       }
       ::MainWindow::changeEvent(event);
     }
@@ -229,18 +240,28 @@ namespace
     {
       setWindowTitle(
           ToQString(Strings::Format("{1} [{0}]", Platform::Version::GetProgramTitle(), item->GetDisplayName())));
-      Playing = true;
+      PlayState = {std::move(item), false};
     }
 
     void StopModule()
     {
-      Playing = false;
+      PlayState = {};
       setWindowTitle(ToQString(Platform::Version::GetProgramTitle()));
     }
 
     void ShowPreferences()
     {
-      UI::ShowPreferencesDialog(*this, Playing);
+      UI::ShowPreferencesDialog(*this, *Playback, PlayState);
+    }
+
+    void ShowMixer()
+    {
+      UI::ShowMixerDialog(*this, *Playback, PlayState);
+    }
+
+    void SetMixerActionText()
+    {
+      ActionMixer->setText(UI::MixingSettingsWidget::tr("Mixer..."));
     }
 
     void ShowComponentsInformation()
@@ -295,7 +316,8 @@ namespace
     SeekControls* const Seeking;
     AnalyzerControl* const Analyzer;
     Playlist::UI::ContainerView* const MultiPlaylist;
-    bool Playing = false;
+    UI::PlaybackState PlayState;
+    QAction* ActionMixer = nullptr;
     std::vector<WidgetOnToolbar> Toolbars;
   };
 }  // namespace

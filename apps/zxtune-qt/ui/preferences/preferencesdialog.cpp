@@ -36,31 +36,41 @@ namespace
     , public Ui::PreferencesDialog
   {
   public:
-    PreferencesDialog(QWidget& parent, bool playing)
+    PreferencesDialog(QWidget& parent, PlaybackSupport& playback, const UI::PlaybackState& state)
       : QDialog(&parent)
     {
       setupUi(this);
       State = UI::State::Create(*this);
       // fill
       QWidget* const soundSettingsPage = UI::SoundSettingsWidget::Create(*Categories);
+      AYMixerPage = UI::MixingSettingsWidget::Create(*Categories, UI::MixingSettingsWidget::AYM, &playback, state);
+      DACMixerPage = UI::MixingSettingsWidget::Create(*Categories, UI::MixingSettingsWidget::DAC, &playback, state);
       QWidget* const pages[] = {UI::AYMSettingsWidget::Create(*Categories),
                                 UI::SAASettingsWidget::Create(*Categories),
                                 UI::SIDSettingsWidget::Create(*Categories),
                                 UI::Z80SettingsWidget::Create(*Categories),
                                 soundSettingsPage,
-                                UI::MixingSettingsWidget::Create(*Categories, 3),
-                                UI::MixingSettingsWidget::Create(*Categories, 4),
-                                UI::MixingSettingsWidget::Create(*Categories, 6),
-                                UI::MixingSettingsWidget::Create(*Categories, 9),
+                                AYMixerPage,
+                                DACMixerPage,
                                 UI::PluginsSettingsWidget::Create(*Categories),
                                 UI::InterfaceSettingsWidget::Create(*Categories)};
       for (auto* p : pages)
       {
         Categories->addTab(p, p->windowTitle());
       }
-      Categories->setTabEnabled(std::find(pages, std::end(pages), soundSettingsPage) - pages, !playing);
+      Categories->setTabEnabled(std::find(pages, std::end(pages), soundSettingsPage) - pages, !state.Item);
       State->AddWidget(*Categories);
       State->Load();
+    }
+
+    void ShowMixer(const UI::PlaybackState& state)
+    {
+      auto kind = UI::MixingSettingsWidget::AYM;
+      if (state.Item)
+      {
+        UI::MixingSettingsWidget::GetKind(*state.Item, kind);
+      }
+      Categories->setCurrentWidget(kind == UI::MixingSettingsWidget::AYM ? AYMixerPage : DACMixerPage);
     }
 
     // QWidgets virtuals
@@ -90,14 +100,23 @@ namespace
 
   private:
     UI::State::Ptr State;
+    QWidget* AYMixerPage = nullptr;
+    QWidget* DACMixerPage = nullptr;
   };
 }  // namespace
 
 namespace UI
 {
-  void ShowPreferencesDialog(QWidget& parent, bool playing)
+  void ShowPreferencesDialog(QWidget& parent, PlaybackSupport& playback, const PlaybackState& state)
   {
-    PreferencesDialog dialog(parent, playing);
+    PreferencesDialog dialog(parent, playback, state);
+    dialog.exec();
+  }
+
+  void ShowMixerDialog(QWidget& parent, PlaybackSupport& playback, const PlaybackState& state)
+  {
+    PreferencesDialog dialog(parent, playback, state);
+    dialog.ShowMixer(state);
     dialog.exec();
   }
 }  // namespace UI

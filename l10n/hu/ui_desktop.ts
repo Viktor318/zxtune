@@ -79,4 +79,12 @@
         <translation>A Qt névjegye</translation>
     </message>
 </context>
+<context>
+    <name>UI::MixingSettingsWidget</name>
+    <message>
+        <location filename="../../apps/zxtune-qt/ui/desktop/mainwindow.cpp" line="264" />
+        <source>Mixer...</source>
+        <translation>Keverő...</translation>
+    </message>
+</context>
 </TS>

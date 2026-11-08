@@ -10,10 +10,21 @@
 
 #pragma once
 
+#include "apps/zxtune-qt/playlist/supp/data.h"
+
 #include <QtWidgets/QWidget>
+
+class PlaybackSupport;
 
 namespace UI
 {
+  //! @brief Currently played item as seen by the mixer pages
+  struct PlaybackState
+  {
+    Playlist::Item::Data::Ptr Item;
+    bool Paused = false;
+  };
+
   class MixingSettingsWidget : public QWidget
   {
     Q_OBJECT
@@ -21,6 +32,19 @@ namespace UI
     explicit MixingSettingsWidget(QWidget& parent);
 
   public:
-    static MixingSettingsWidget* Create(QWidget& parent, unsigned channels);
+    enum Kind
+    {
+      //! AY/YM chips, single and TurboSound
+      AYM,
+      //! 3- and 4-channel digital (Covox, SounDrive) tunes
+      DAC
+    };
+
+    //! @param playback source of playback state changes, may be null
+    static MixingSettingsWidget* Create(QWidget& parent, Kind kind, PlaybackSupport* playback,
+                                        const PlaybackState& state);
+
+    //! @brief Page applicable to the item, if any
+    static bool GetKind(const Playlist::Item::Data& item, Kind& kind);
   };
 }  // namespace UI

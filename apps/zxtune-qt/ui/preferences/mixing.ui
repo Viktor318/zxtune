@@ -35,7 +35,10 @@
     </spacer>
    </item>
    <item>
-    <layout class="QHBoxLayout">
+    <layout class="QHBoxLayout" name="bottomLayout">
+     <property name="spacing">
+      <number>8</number>
+     </property>
      <item>
       <widget class="QPushButton" name="resetButton">
        <property name="text">
@@ -45,13 +48,6 @@
         <string>Restore default volume and panning of all channels</string>
        </property>
       </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </spacer>
      </item>
     </layout>
    </item>
