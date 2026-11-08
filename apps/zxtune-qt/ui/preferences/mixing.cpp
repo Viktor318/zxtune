@@ -317,7 +317,7 @@ namespace
       Description = new QLabel(this);
       Description->setWordWrap(true);
       auto* mainLayout = static_cast<QVBoxLayout*>(layout());
-      // description, line, [stereo mode, line,] channels, buttons, line, status
+      // description, line, [stereo mode, line,] channels, line, buttons, line, status
       mainLayout->insertWidget(0, Description);
       mainLayout->insertWidget(1, CreateLine());
       if (PageKind == AYM)
@@ -334,6 +334,7 @@ namespace
         mainLayout->insertWidget(3, CreateLine());
         LayoutValue = UI::Value::Bind<Parameters::ZXTune::Core::AYM::Layout>(*StereoMode, *Options);
       }
+      mainLayout->insertWidget(mainLayout->indexOf(bottomLayout), CreateLine());
       // playback status is shown below the buttons
       mainLayout->addWidget(CreateLine());
       Status = new QLabel(this);
