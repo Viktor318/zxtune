@@ -261,24 +261,59 @@
     </message>
 </context>
 <context>
-    <name>UI::MixerWidget</name>
+    <name>UI::MixingSettingsWidget</name>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixer.cpp" line="21" />
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="173" />
+        <source>C</source>
+        <comment>panning</comment>
+        <translation>K</translation>
+    </message>
+    <message>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="175" />
+        <source>L %1</source>
+        <comment>panning</comment>
+        <translation>B %1</translation>
+    </message>
+    <message>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="176" />
+        <source>R %1</source>
+        <comment>panning</comment>
+        <translation>J %1</translation>
+    </message>
+    <message>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="276" />
+        <source>%1-channels mixer</source>
+        <translation>%1 csatornás keverő</translation>
+    </message>
+    <message>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="277" />
+        <source>Volume</source>
+        <translation>Hangerő</translation>
+    </message>
+    <message>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="278" />
         <source>Left</source>
         <translation>Bal</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixer.cpp" line="22" />
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="279" />
+        <source>Panning</source>
+        <translation>Panoráma</translation>
+    </message>
+    <message>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="280" />
         <source>Right</source>
         <translation>Jobb</translation>
     </message>
-</context>
-<context>
-    <name>UI::MixingSettingsWidget</name>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="69" />
-        <source>%1-channels mixer</source>
-        <translation>%1 csatornás keverő</translation>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.ui" line="42" />
+        <source>Reset</source>
+        <translation>Alaphelyzet</translation>
+    </message>
+    <message>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.ui" line="45" />
+        <source>Restore default volume and panning of all channels</source>
+        <translation>Minden csatorna hangerejének és panorámájának visszaállítása</translation>
     </message>
 </context>
 <context>

@@ -6,11 +6,11 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>320</width>
-    <height>108</height>
+    <width>420</width>
+    <height>160</height>
    </rect>
   </property>
-  <layout class="QHBoxLayout">
+  <layout class="QVBoxLayout">
    <property name="spacing">
     <number>4</number>
    </property>
@@ -18,23 +18,41 @@
     <number>4</number>
    </property>
    <item>
-    <layout class="QVBoxLayout" name="channelNames">
-     <property name="spacing">
-      <number>4</number>
+    <layout class="QGridLayout" name="channelsLayout">
+     <property name="horizontalSpacing">
+      <number>8</number>
      </property>
-     <property name="margin">
-      <number>0</number>
+     <property name="verticalSpacing">
+      <number>2</number>
      </property>
     </layout>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="channelValues">
-     <property name="spacing">
-      <number>4</number>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
      </property>
-     <property name="margin">
-      <number>0</number>
-     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout">
+     <item>
+      <widget class="QPushButton" name="resetButton">
+       <property name="text">
+        <string>Reset</string>
+       </property>
+       <property name="toolTip">
+        <string>Restore default volume and panning of all channels</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </spacer>
+     </item>
     </layout>
    </item>
   </layout>

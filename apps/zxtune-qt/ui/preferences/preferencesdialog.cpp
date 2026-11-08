@@ -50,6 +50,8 @@ namespace
                                 soundSettingsPage,
                                 UI::MixingSettingsWidget::Create(*Categories, 3),
                                 UI::MixingSettingsWidget::Create(*Categories, 4),
+                                UI::MixingSettingsWidget::Create(*Categories, 6),
+                                UI::MixingSettingsWidget::Create(*Categories, 9),
                                 UI::PluginsSettingsWidget::Create(*Categories),
                                 UI::InterfaceSettingsWidget::Create(*Categories)};
       for (auto* p : pages)

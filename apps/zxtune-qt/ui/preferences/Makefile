@@ -3,7 +3,7 @@ dirs.root := ../../../..
 
 source_dirs := .
 
-ui_files = aym mixer mixing plugins sound saa sid z80 interface preferencesdialog
+ui_files = aym mixing plugins sound saa sid z80 interface preferencesdialog
 
 ui_files += sound_alsa sound_dsound sound_oss sound_sdl sound_win32
 
