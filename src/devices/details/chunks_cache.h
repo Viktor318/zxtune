@@ -33,7 +33,8 @@ namespace Devices::Details
         Buffer.erase(Buffer.begin() + pending, Buffer.end());
         Consumed = 0;
       }
-      Require(Buffer.empty() || Buffer.back().TimeStamp < src.TimeStamp);
+      // Seeking feeds a chip with many chunks at the same time stamp, they are applied in order without rendering
+      Require(Buffer.empty() || !(src.TimeStamp < Buffer.back().TimeStamp));
       Buffer.emplace_back(std::move(src));
     }
 

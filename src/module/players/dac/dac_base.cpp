@@ -63,6 +63,10 @@ namespace Module
         Device->UpdateState(LastChunk);
         LastChunk.TimeStamp += FrameDuration.Get<Devices::DAC::TimeUnit>();
       }
+      // chip's clock has to reach the stamp of the next chunk to render
+      Devices::DAC::DataChunk sync;
+      sync.TimeStamp = LastChunk.TimeStamp;
+      Device->UpdateState(sync);
     }
 
   private:

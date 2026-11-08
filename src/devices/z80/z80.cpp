@@ -190,8 +190,12 @@ namespace Devices::Z80
     void Seek(const Stamp time)
     {
       Clock.Reset();
-      const uint64_t tick = Clock.GetTickAtTime(time);
       Clock.SetFrequency(ClockFreq);
+      // Exact conversion: Reset() clears the frequency, and fixed point ticks per time slice are too coarse
+      // (milliseconds of error after a few seconds) to restore the time after seeking
+      constexpr auto PER_SECOND = TimeUnit::PER_SECOND;
+      const auto raw = time.Get();
+      const uint64_t tick = (raw / PER_SECOND) * ClockFreq + (raw % PER_SECOND) * ClockFreq / PER_SECOND;
       Clock.AdvanceTick(tick);
     }
 
