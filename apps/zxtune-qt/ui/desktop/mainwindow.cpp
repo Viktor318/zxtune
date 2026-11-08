@@ -38,12 +38,15 @@
 #include "contract.h"
 #include "make_ptr.h"
 
+#include <QtCore/QTimer>
 #include <QtCore/QUrl>
 #include <QtGui/QCloseEvent>
 #include <QtGui/QDesktopServices>
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QLayout>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QPushButton>
 #include <QtWidgets/QToolBar>
 
 #include <utility>
@@ -60,6 +63,9 @@ namespace
     res->Set(ToQString(lang));
     return res;
   }
+
+  // Volume slider, its value and the mixer button
+  const int VOLUME_TOOLBAR_MIN_WIDTH = 300;
 
   class DesktopMainWindowImpl
     : public DesktopMainWindow
@@ -89,6 +95,7 @@ namespace
         Toolbars.push_back(AddWidgetOnToolbar(Controls, false));
         Toolbars.push_back(AddWidgetOnToolbar(FastOptions, false));
         Toolbars.push_back(AddWidgetOnToolbar(Volume, true));
+        VolumeToolbar = Toolbars.back().second;
         Toolbars.push_back(AddWidgetOnToolbar(Status, false));
         Toolbars.push_back(AddWidgetOnToolbar(Seeking, true));
         Toolbars.push_back(AddWidgetOnToolbar(Analyzer, false));
@@ -107,13 +114,18 @@ namespace
       Require(connect(actionReportBug, &QAction::triggered, this, &DesktopMainWindowImpl::ReportIssue));
       Require(connect(actionAboutQt, &QAction::triggered, this, &DesktopMainWindowImpl::ShowAboutQt));
       Require(connect(actionPreferences, &QAction::triggered, this, &DesktopMainWindowImpl::ShowPreferences));
-      // mixer page applicable to the current tune
+      // mixer page applicable to the current tune, from menu and next to volume control
       ActionMixer = new QAction(this);
       ActionMixer->setMenuRole(QAction::NoRole);
       Controls->GetActionsMenu()->addSeparator();
       Controls->GetActionsMenu()->addAction(ActionMixer);
       Require(connect(ActionMixer, &QAction::triggered, this, &DesktopMainWindowImpl::ShowMixer));
+      MixerButton = new QPushButton(this);
+      VolumeToolbar->addWidget(MixerButton);
+      VolumeToolbar->setMinimumWidth(VOLUME_TOOLBAR_MIN_WIDTH);
+      Require(connect(MixerButton, &QPushButton::clicked, this, &DesktopMainWindowImpl::ShowMixer));
       SetMixerActionText();
+      UpdateMinimumWidth();
       if (Update::CheckOperation* op = Update::CheckOperation::Create(*this))
       {
         Require(connect(actionCheckUpdates, &QAction::triggered, op, &Update::CheckOperation::Execute));
@@ -241,6 +253,34 @@ namespace
       setWindowTitle(
           ToQString(Strings::Format("{1} [{0}]", Platform::Version::GetProgramTitle(), item->GetDisplayName())));
       PlayState = {std::move(item), false};
+      // channel buttons are changed by playback options, wait for their layout
+      QTimer::singleShot(0, this, &DesktopMainWindowImpl::UpdateMinimumWidth);
+    }
+
+    // Tunes with more channels (e.g. TurboSound) have more channel buttons on the toolbars row,
+    // the window may grow to keep the volume toolbar wide enough
+    void UpdateMinimumWidth()
+    {
+      int rowWidth = 0;
+      for (const auto& toolbar : Toolbars)
+      {
+        if (toolbar.second == VolumeToolbar)
+        {
+          break;
+        }
+        if (toolbar.second->isVisible())
+        {
+          // size hints are cached by layouts and are not reduced when buttons get hidden
+          for (auto* layout : toolbar.second->findChildren<QLayout*>())
+          {
+            layout->invalidate();
+          }
+          rowWidth += toolbar.second->sizeHint().width();
+        }
+      }
+      // toolbar handles, spacing and window frame
+      const int MARGINS = 16;
+      setMinimumWidth(rowWidth + VOLUME_TOOLBAR_MIN_WIDTH + MARGINS);
     }
 
     void StopModule()
@@ -262,6 +302,8 @@ namespace
     void SetMixerActionText()
     {
       ActionMixer->setText(UI::MixingSettingsWidget::tr("Mixer..."));
+      MixerButton->setText(UI::MixingSettingsWidget::tr("Mixer"));
+      MixerButton->setToolTip(UI::MixingSettingsWidget::tr("Mixer settings of the current tune"));
     }
 
     void ShowComponentsInformation()
@@ -318,6 +360,8 @@ namespace
     Playlist::UI::ContainerView* const MultiPlaylist;
     UI::PlaybackState PlayState;
     QAction* ActionMixer = nullptr;
+    QToolBar* VolumeToolbar = nullptr;
+    QPushButton* MixerButton = nullptr;
     std::vector<WidgetOnToolbar> Toolbars;
   };
 }  // namespace

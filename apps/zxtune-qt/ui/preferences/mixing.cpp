@@ -146,6 +146,9 @@ namespace
       PanSlider->setTickInterval(100);
       PanValue->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
       PanValue->setMinimumWidth(PanValue->fontMetrics().horizontalAdvance(QLatin1String("M 100")));
+      // double click restores default value of the slider
+      VolumeSlider->installEventFilter(this);
+      PanSlider->installEventFilter(this);
       Load();
       Require(connect(VolumeSlider, &QSlider::valueChanged, this, &ChannelControls::OnVolumeSlider));
       Require(connect(VolumeValue, qOverload<int>(&QSpinBox::valueChanged), this, &ChannelControls::OnVolumeValue));
@@ -172,6 +175,25 @@ namespace
     void UpdateTexts()
     {
       PanValue->setText(PanText(PanSlider->value()));
+    }
+
+    bool eventFilter(QObject* watched, QEvent* event) override
+    {
+      if (event->type() == QEvent::MouseButtonDblClick)
+      {
+        const auto defaults = FromLevels(Left.Default, Right.Default);
+        if (watched == VolumeSlider)
+        {
+          VolumeSlider->setValue(defaults.Volume);
+          return true;
+        }
+        else if (watched == PanSlider)
+        {
+          PanSlider->setValue(defaults.Pan);
+          return true;
+        }
+      }
+      return QObject::eventFilter(watched, event);
     }
 
   private:

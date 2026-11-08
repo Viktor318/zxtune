@@ -10,6 +10,7 @@
 
 #include "apps/zxtune-qt/ui/preferences/preferencesdialog.h"
 
+#include "apps/zxtune-qt/supp/playback_supp.h"
 #include "apps/zxtune-qt/ui/preferences/aym.h"
 #include "apps/zxtune-qt/ui/preferences/interface.h"
 #include "apps/zxtune-qt/ui/preferences/mixing.h"
@@ -21,7 +22,9 @@
 #include "apps/zxtune-qt/ui/state.h"
 #include "preferencesdialog.ui.h"
 
-#include <QtGui/QCloseEvent>
+#include "contract.h"
+
+#include <QtCore/QPointer>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QTabWidget>
 #include <QtWidgets/QVBoxLayout>
@@ -58,7 +61,16 @@ namespace
       {
         Categories->addTab(p, p->windowTitle());
       }
-      Categories->setTabEnabled(std::find(pages, std::end(pages), soundSettingsPage) - pages, !state.Item);
+      const auto soundPageIndex = static_cast<int>(std::find(pages, std::end(pages), soundSettingsPage) - pages);
+      Categories->setTabEnabled(soundPageIndex, !state.Item);
+      // dialog is modeless, so playback may start or stop while it's opened
+      Require(connect(&playback, &PlaybackSupport::OnStartModule, this,
+                      [this, soundPageIndex](Sound::Backend::Ptr, Playlist::Item::Data::Ptr) {
+                        Categories->setTabEnabled(soundPageIndex, false);
+                      }));
+      Require(connect(&playback, &PlaybackSupport::OnStopModule, this,
+                      [this, soundPageIndex]() { Categories->setTabEnabled(soundPageIndex, true); }));
+      Require(connect(this, &QDialog::finished, this, &PreferencesDialog::OnFinished));
       State->AddWidget(*Categories);
       State->Load();
     }
@@ -73,12 +85,22 @@ namespace
       Categories->setCurrentWidget(kind == UI::MixingSettingsWidget::AYM ? AYMixerPage : DACMixerPage);
     }
 
-    // QWidgets virtuals
-    void closeEvent(QCloseEvent* event) override
+    void Activate()
+    {
+      show();
+      raise();
+      activateWindow();
+    }
+
+  private:
+    void OnFinished()
     {
       State->Save();
-      event->accept();
+      deleteLater();
     }
+
+  public:
+    // QWidgets virtuals
 
     void changeEvent(QEvent* event) override
     {
@@ -107,16 +129,26 @@ namespace
 
 namespace UI
 {
+  // Modeless and single: playback can be controlled while settings are opened
+  PreferencesDialog& GetPreferencesDialog(QWidget& parent, PlaybackSupport& playback, const PlaybackState& state)
+  {
+    static QPointer<PreferencesDialog> instance;
+    if (!instance)
+    {
+      instance = new PreferencesDialog(parent, playback, state);
+    }
+    return *instance;
+  }
+
   void ShowPreferencesDialog(QWidget& parent, PlaybackSupport& playback, const PlaybackState& state)
   {
-    PreferencesDialog dialog(parent, playback, state);
-    dialog.exec();
+    GetPreferencesDialog(parent, playback, state).Activate();
   }
 
   void ShowMixerDialog(QWidget& parent, PlaybackSupport& playback, const PlaybackState& state)
   {
-    PreferencesDialog dialog(parent, playback, state);
+    auto& dialog = GetPreferencesDialog(parent, playback, state);
     dialog.ShowMixer(state);
-    dialog.exec();
+    dialog.Activate();
   }
 }  // namespace UI

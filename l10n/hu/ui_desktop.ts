@@ -82,9 +82,19 @@
 <context>
     <name>UI::MixingSettingsWidget</name>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/desktop/mainwindow.cpp" line="264" />
+        <location filename="../../apps/zxtune-qt/ui/desktop/mainwindow.cpp" line="271" />
         <source>Mixer...</source>
         <translation>Keverő...</translation>
+    </message>
+    <message>
+        <location filename="../../apps/zxtune-qt/ui/desktop/mainwindow.cpp" line="272" />
+        <source>Mixer</source>
+        <translation>Keverő</translation>
+    </message>
+    <message>
+        <location filename="../../apps/zxtune-qt/ui/desktop/mainwindow.cpp" line="273" />
+        <source>Mixer settings of the current tune</source>
+        <translation>A szóló dal keverőbeállításai</translation>
     </message>
 </context>
 </TS>
