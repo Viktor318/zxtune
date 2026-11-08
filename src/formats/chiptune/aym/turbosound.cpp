@@ -17,6 +17,10 @@
 
 #include "byteorder.h"
 #include "make_ptr.h"
+#include "string_type.h"
+
+#include <algorithm>
+#include <vector>
 
 namespace Formats::Chiptune
 {
@@ -24,88 +28,109 @@ namespace Formats::Chiptune
   {
     const std::size_t MIN_SIZE = 256;
     const std::size_t MAX_MODULE_SIZE = 32767;
-    const std::size_t MAX_SIZE = MAX_MODULE_SIZE * 2;
 
-    struct Footer
+    // Footer is a list of {ID[4], le_uint16_t Size} per submodule followed by signature
+    // '02TS' - two chips (Vortex Tracker, ZXTune)
+    // '03TS' - three chips (ZX Spectrum Next, MXTracker)
+    struct SubmoduleInfo
     {
-      uint8_t ID1[4];  //'PT3!' or other type
-      le_uint16_t Size1;
-      uint8_t ID2[4];  // same
-      le_uint16_t Size2;
-      uint8_t ID3[4];  //'02TS'
+      uint8_t ID[4];  //'PT3!' or other type
+      le_uint16_t Size;
     };
 
-    static_assert(sizeof(Footer) * alignof(Footer) == 16, "Invalid layout");
+    static_assert(sizeof(SubmoduleInfo) * alignof(SubmoduleInfo) == 6, "Invalid layout");
+
+    const std::size_t SIGNATURE_SIZE = 4;
 
     const auto DESCRIPTION = "TurboSound"sv;
-    const auto FOOTER_FORMAT =
-        "%0xxxxxxx%0xxxxxxx%0xxxxxxx21"  // uint8_t ID1[4];//'PT3!' or other type
-        "?%0xxxxxxx"                     // uint16_t Size1;
-        "%0xxxxxxx%0xxxxxxx%0xxxxxxx21"  // uint8_t ID2[4];//same
-        "?%0xxxxxxx"                     // uint16_t Size2;
-        "'0'2'T'S"                       // uint8_t ID3[4];//'02TS'
+    const auto SUBMODULE_INFO_FORMAT =
+        "%0xxxxxxx%0xxxxxxx%0xxxxxxx21"  // uint8_t ID[4];//'PT3!' or other type
+        "?%0xxxxxxx"                     // uint16_t Size;
         ""sv;
+
+    String MakeFooterFormat(uint_t chips)
+    {
+      String result;
+      for (uint_t idx = 0; idx < chips; ++idx)
+      {
+        result += SUBMODULE_INFO_FORMAT;
+      }
+      result += chips == 2 ? "'0'2'T'S"sv : "'0'3'T'S"sv;
+      return result;
+    }
 
     class StubBuilder : public Builder
     {
     public:
-      void SetFirstSubmoduleLocation(std::size_t /*offset*/, std::size_t /*size*/) override {}
-      void SetSecondSubmoduleLocation(std::size_t /*offset*/, std::size_t /*size*/) override {}
+      void AddSubmoduleLocation(std::size_t /*offset*/, std::size_t /*size*/) override {}
     };
 
     class ModuleTraits
     {
     public:
-      ModuleTraits(Binary::View data, std::size_t footerOffset)
+      ModuleTraits(Binary::View data, std::size_t footerOffset, uint_t chips)
         : FooterOffset(footerOffset)
-        , Foot(data.SubView(footerOffset).As<Footer>())
-        , FirstSize(Foot ? std::size_t(Foot->Size1) : 0)
-        , SecondSize(Foot ? std::size_t(Foot->Size2) : 0)
-      {}
+        , FooterSize(chips * sizeof(SubmoduleInfo) + SIGNATURE_SIZE)
+      {
+        const auto foot = data.SubView(footerOffset, FooterSize);
+        if (foot.Size() == FooterSize)
+        {
+          const auto* infos = foot.As<SubmoduleInfo>();
+          for (uint_t idx = 0; idx < chips; ++idx)
+          {
+            Sizes.push_back(infos[idx].Size);
+          }
+        }
+      }
 
       bool Matched() const
       {
-        return Foot != nullptr && FooterOffset == FirstSize + SecondSize
-               && Math::InRange(FooterOffset, MIN_SIZE, MAX_SIZE);
+        return !Sizes.empty() && FooterOffset == GetModulesSize()
+               && Math::InRange(FooterOffset, MIN_SIZE, MAX_MODULE_SIZE * Sizes.size());
       }
 
       std::size_t NextOffset() const
       {
-        if (Foot == nullptr)
+        if (Sizes.empty())
         {
           return FooterOffset;
         }
-        const std::size_t totalSize = FirstSize + SecondSize;
+        const std::size_t totalSize = GetModulesSize();
         if (totalSize < FooterOffset)
         {
           return FooterOffset - totalSize;
         }
         else
         {
-          return FooterOffset + sizeof(*Foot);
+          return FooterOffset + FooterSize;
         }
       }
 
-      std::size_t GetFirstModuleSize() const
+      const std::vector<std::size_t>& GetModulesSizes() const
       {
-        return FirstSize;
-      }
-
-      std::size_t GetSecondModuleSize() const
-      {
-        return SecondSize;
+        return Sizes;
       }
 
       std::size_t GetTotalSize() const
       {
-        return FooterOffset + sizeof(*Foot);
+        return FooterOffset + FooterSize;
+      }
+
+    private:
+      std::size_t GetModulesSize() const
+      {
+        std::size_t res = 0;
+        for (const auto size : Sizes)
+        {
+          res += size;
+        }
+        return res;
       }
 
     private:
       const std::size_t FooterOffset;
-      const Footer* const Foot;
-      const std::size_t FirstSize;
-      const std::size_t SecondSize;
+      const std::size_t FooterSize;
+      std::vector<std::size_t> Sizes;
     };
 
     // TODO: rework avoiding Binary::Format creation here
@@ -115,28 +140,35 @@ namespace Formats::Chiptune
       using Ptr = std::shared_ptr<const FooterFormat>;
 
       FooterFormat()
-        : Delegate(Binary::CreateScanningFormat(FOOTER_FORMAT))
+        : TwoChips(Binary::CreateScanningFormat(MakeFooterFormat(2)))
+        , ThreeChips(Binary::CreateScanningFormat(MakeFooterFormat(3)))
       {}
 
       bool Match(Binary::View data) const override
       {
-        const ModuleTraits traits = GetTraits(data);
-        return traits.Matched();
+        return GetTraits(data).Matched();
       }
 
       std::size_t NextMatchOffset(Binary::View data) const override
       {
-        const ModuleTraits traits = GetTraits(data);
-        return traits.NextOffset();
+        const ModuleTraits two(data, TwoChips->NextMatchOffset(data), 2);
+        const ModuleTraits three(data, ThreeChips->NextMatchOffset(data), 3);
+        return std::min(two.NextOffset(), three.NextOffset());
       }
 
       ModuleTraits GetTraits(Binary::View data) const
       {
-        return {data, Delegate->NextMatchOffset(data)};
+        ModuleTraits two(data, TwoChips->NextMatchOffset(data), 2);
+        if (two.Matched())
+        {
+          return two;
+        }
+        return {data, ThreeChips->NextMatchOffset(data), 3};
       }
 
     private:
-      const Binary::ScanningFormat::Ptr Delegate;
+      const Binary::ScanningFormat::Ptr TwoChips;
+      const Binary::ScanningFormat::Ptr ThreeChips;
     };
 
     Formats::Chiptune::Container::Ptr Parse(const Binary::Container& rawData, Builder& target)
@@ -148,8 +180,12 @@ namespace Formats::Chiptune
         return {};
       }
 
-      target.SetFirstSubmoduleLocation(0, traits.GetFirstModuleSize());
-      target.SetSecondSubmoduleLocation(traits.GetFirstModuleSize(), traits.GetSecondModuleSize());
+      std::size_t offset = 0;
+      for (const auto size : traits.GetModulesSizes())
+      {
+        target.AddSubmoduleLocation(offset, size);
+        offset += size;
+      }
 
       const std::size_t usedSize = traits.GetTotalSize();
       auto subData = rawData.GetSubcontainer(0, usedSize);

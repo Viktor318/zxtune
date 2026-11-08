@@ -14,6 +14,7 @@
 #include "module/players/aym/freq_tables.h"
 
 #include "core/parameters.h"
+#include "devices/turbosound.h"
 #include "l10n/api.h"
 #include "math/numeric.h"
 #include "parameters/identifiers_set.h"
@@ -231,7 +232,7 @@ namespace Module::AYM
       : Params(std::move(params))
       , Index(idx)
     {
-      Require(Index <= 1);
+      Require(Index < Devices::TurboSound::MAX_CHIPS);
     }
 
     uint_t Version() const override
@@ -254,18 +255,20 @@ namespace Module::AYM
       ('a', 1) => 'a'
       ('a/b', 0) => 'a'
       ('a/b', 1) => 'b'
+      ('a/b/c', 2) => 'c'
     */
     StringView ExtractMergedValue(StringView val) const
     {
-      const auto pos = val.find_first_of('/');
-      if (pos != val.npos)
+      auto rest = val;
+      for (uint_t idx = 0;; ++idx)
       {
-        Require(val.npos == val.find_first_of('/', pos + 1));
-        return Index == 0 ? val.substr(0, pos) : val.substr(pos + 1);
-      }
-      else
-      {
-        return val;
+        const auto pos = rest.find_first_of('/');
+        if (idx == Index || pos == rest.npos)
+        {
+          Require(idx == Index || idx == 0);
+          return rest.substr(0, pos);
+        }
+        rest = rest.substr(pos + 1);
       }
     }
 

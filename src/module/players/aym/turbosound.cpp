@@ -24,22 +24,47 @@
 #include "make_ptr.h"
 #include "string_view.h"
 
+#include <algorithm>
 #include <map>
 #include <set>
+#include <vector>
 
 namespace Module::TurboSound
 {
-  class MergedModuleProperties : public Parameters::Accessor
+  // Same values are merged into one, different ones are joined with '/' in chips order
+  // (see AYM::TrackParameters for per-chip frequency tables)
+  class MergedStrings
   {
-    static void MergeStringProperty(StringView /*propName*/, String& lh, StringView rh)
+  public:
+    void Add(StringView val)
     {
-      if (lh != rh)
-      {
-        lh += '/';
-        lh += rh;
-      }
+      Values.emplace_back(val);
     }
 
+    String Get() const
+    {
+      if (std::all_of(Values.begin(), Values.end(), [this](const auto& val) { return val == Values.front(); }))
+      {
+        return Values.front();
+      }
+      String result;
+      for (const auto& val : Values)
+      {
+        if (!result.empty())
+        {
+          result += '/';
+        }
+        result += val;
+      }
+      return result;
+    }
+
+  private:
+    std::vector<String> Values;
+  };
+
+  class MergedModuleProperties : public Parameters::Accessor
+  {
     class MergedStringsVisitor : public Parameters::Visitor
     {
     public:
@@ -57,15 +82,7 @@ namespace Module::TurboSound
 
       void SetValue(Parameters::Identifier name, StringView val) override
       {
-        const auto it = Strings.find(static_cast<StringView>(name));
-        if (it == Strings.end())
-        {
-          Strings.emplace(name.AsString(), val);
-        }
-        else
-        {
-          MergeStringProperty(name, it->second, val);
-        }
+        Strings[name.AsString()].Add(val);
       }
 
       void SetValue(Parameters::Identifier name, Binary::View val) override
@@ -80,22 +97,20 @@ namespace Module::TurboSound
       {
         for (const auto& str : Strings)
         {
-          Delegate.SetValue(str.first, str.second);
+          Delegate.SetValue(str.first, str.second.Get());
         }
       }
 
     private:
       Parameters::Visitor& Delegate;
-      using StringsValuesMap = std::map<String, Parameters::StringType, std::less<>>;
-      StringsValuesMap Strings;
+      std::map<String, MergedStrings, std::less<>> Strings;
       Parameters::NamesSet DoneIntegers;
       Parameters::NamesSet DoneDatas;
     };
 
   public:
-    MergedModuleProperties(Parameters::Accessor::Ptr first, Parameters::Accessor::Ptr second)
-      : First(std::move(first))
-      , Second(std::move(second))
+    explicit MergedModuleProperties(std::vector<Parameters::Accessor::Ptr> submodules)
+      : Submodules(std::move(submodules))
     {}
 
     uint_t Version() const override
@@ -105,82 +120,101 @@ namespace Module::TurboSound
 
     std::optional<Parameters::IntType> FindInteger(Parameters::Identifier name) const override
     {
-      if (auto first = First->FindInteger(name))
+      for (const auto& sub : Submodules)
       {
-        return first;
+        if (auto val = sub->FindInteger(name))
+        {
+          return val;
+        }
       }
-      return Second->FindInteger(name);
+      return {};
     }
 
     std::optional<Parameters::StringType> FindString(Parameters::Identifier name) const override
     {
-      auto val1 = First->FindString(name);
-      auto val2 = Second->FindString(name);
-      if (val1 && val2)
+      MergedStrings merged;
+      bool found = false;
+      for (const auto& sub : Submodules)
       {
-        MergeStringProperty(name, *val1, *val2);
-        return val1;
+        if (auto val = sub->FindString(name))
+        {
+          merged.Add(*val);
+          found = true;
+        }
       }
-      return val1 ? val1 : val2;
+      if (found)
+      {
+        return merged.Get();
+      }
+      return {};
     }
 
     Binary::Data::Ptr FindData(Parameters::Identifier name) const override
     {
-      if (auto first = First->FindData(name))
+      for (const auto& sub : Submodules)
       {
-        return first;
+        if (auto val = sub->FindData(name))
+        {
+          return val;
+        }
       }
-      return Second->FindData(name);
+      return {};
     }
 
     void Process(Parameters::Visitor& visitor) const override
     {
       MergedStringsVisitor mergedVisitor(visitor);
-      First->Process(mergedVisitor);
-      Second->Process(mergedVisitor);
+      for (const auto& sub : Submodules)
+      {
+        sub->Process(mergedVisitor);
+      }
       mergedVisitor.ProcessRestStrings();
     }
 
   private:
-    const Parameters::Accessor::Ptr First;
-    const Parameters::Accessor::Ptr Second;
+    const std::vector<Parameters::Accessor::Ptr> Submodules;
   };
 
   class MergedSource : public DataIterator
   {
   public:
-    MergedSource(AYM::DataIterator::Ptr first, AYM::DataIterator::Ptr second)
-      : First(std::move(first))
-      , Second(std::move(second))
+    explicit MergedSource(std::vector<AYM::DataIterator::Ptr> sources)
+      : Sources(std::move(sources))
     {}
 
     FramedState GetState() const override
     {
-      auto first = First->GetState();
-      auto second = Second->GetState();
-      if (first.Track && second.Track)
+      auto result = Sources.front()->GetState();
+      for (auto it = Sources.begin() + 1, lim = Sources.end(); it != lim && result.Track; ++it)
       {
-        first.Track->Channels += second.Track->Channels;
+        if (const auto state = (*it)->GetState(); state.Track)
+        {
+          result.Track->Channels += state.Track->Channels;
+        }
       }
-      return first;
+      return result;
     }
 
     Devices::TurboSound::Registers Advance() override
     {
-      auto first = First->Advance();
-      auto second = Second->Advance();
-      return {{std::move(first), std::move(second)}};
+      Devices::TurboSound::Registers result;
+      for (std::size_t idx = 0; idx < Sources.size(); ++idx)
+      {
+        result[idx] = Sources[idx]->Advance();
+      }
+      return result;
     }
 
     void Reset() override
     {
-      First->Reset();
-      Second->Reset();
+      for (const auto& src : Sources)
+      {
+        src->Reset();
+      }
     }
 
   private:
-    const AYM::DataIterator::Ptr First;
-    const AYM::DataIterator::Ptr Second;
+    const std::vector<AYM::DataIterator::Ptr> Sources;
   };
 
   class Renderer : public Module::Renderer
@@ -243,45 +277,51 @@ namespace Module::TurboSound
   class MergedChiptune : public Chiptune
   {
   public:
-    MergedChiptune(AYM::Chiptune::Ptr first, AYM::Chiptune::Ptr second)
-      : First(std::move(first))
-      , Second(std::move(second))
+    explicit MergedChiptune(std::vector<AYM::Chiptune::Ptr> submodules)
+      : Submodules(std::move(submodules))
     {}
 
     Time::Microseconds GetFrameDuration() const override
     {
-      return First->GetFrameDuration();
+      return Submodules.front()->GetFrameDuration();
     }
 
     FramedInformation GetInformation() const override
     {
-      auto info = First->GetInformation();
+      auto info = Submodules.front()->GetInformation();
       if (info.Track)
       {
-        info.Track->ChannelsCount = TRACK_CHANNELS;
+        info.Track->ChannelsCount = AYM::TRACK_CHANNELS * GetChipsCount();
       }
       return info;
     }
 
-    DataIterator::Ptr CreateDataIterator(AYM::TrackParameters::Ptr first,
-                                         AYM::TrackParameters::Ptr second) const override
+    uint_t GetChipsCount() const override
     {
-      return MakePtr<MergedSource>(First->CreateDataIterator(std::move(first)),
-                                   Second->CreateDataIterator(std::move(second)));
+      return static_cast<uint_t>(Submodules.size());
+    }
+
+    DataIterator::Ptr CreateDataIterator(TrackParametersList params) const override
+    {
+      std::vector<AYM::DataIterator::Ptr> sources;
+      for (std::size_t idx = 0; idx < Submodules.size(); ++idx)
+      {
+        sources.emplace_back(Submodules[idx]->CreateDataIterator(std::move(params[idx])));
+      }
+      return MakePtr<MergedSource>(std::move(sources));
     }
 
   private:
-    const AYM::Chiptune::Ptr First;
-    const AYM::Chiptune::Ptr Second;
+    const std::vector<AYM::Chiptune::Ptr> Submodules;
   };
 
-  Devices::TurboSound::Chip::Ptr CreateChip(uint_t samplerate, Parameters::Accessor::Ptr params)
+  Devices::TurboSound::Chip::Ptr CreateChip(uint_t chips, uint_t samplerate, Parameters::Accessor::Ptr params)
   {
     using MixerType = Sound::ThreeChannelsMatrixMixer;
     auto mixer = MixerType::Create();
     auto pollParams = Sound::CreateMixerNotificationParameters(std::move(params), mixer);
     auto chipParams = AYM::ChipParameters::Create(samplerate, std::move(pollParams));
-    return Devices::TurboSound::CreateChip(std::move(chipParams), std::move(mixer));
+    return Devices::TurboSound::CreateChip(chips, std::move(chipParams), std::move(mixer));
   }
 
   class Holder : public Module::Holder
@@ -306,9 +346,14 @@ namespace Module::TurboSound
     Renderer::Ptr CreateRenderer(uint_t samplerate, Parameters::Accessor::Ptr params) const override
     {
       auto rendererParams = params;
-      auto iterator =
-          Tune->CreateDataIterator(AYM::TrackParameters::Create(params, 0), AYM::TrackParameters::Create(params, 1));
-      auto chip = CreateChip(samplerate, std::move(params));
+      const auto chips = Tune->GetChipsCount();
+      TrackParametersList trackParams;
+      for (uint_t idx = 0; idx < chips; ++idx)
+      {
+        trackParams.emplace_back(AYM::TrackParameters::Create(params, idx));
+      }
+      auto iterator = Tune->CreateDataIterator(std::move(trackParams));
+      auto chip = CreateChip(chips, samplerate, std::move(params));
       return MakePtr<Renderer>(FrameDurationParameter(std::move(rendererParams), AYM::BASE_FRAME_DURATION),
                                std::move(iterator), std::move(chip));
     }
@@ -319,7 +364,7 @@ namespace Module::TurboSound
     const Time::Microseconds FrameDuration;
   };
 
-  Chiptune::Ptr CreateChiptune(AYM::Chiptune::Ptr first, AYM::Chiptune::Ptr second)
+  Chiptune::Ptr CreateChiptune(std::vector<AYM::Chiptune::Ptr> submodules)
   {
     /* TODO: think about it
     if (first->GetInformation()->FramesCount() < second->GetInformation()->FramesCount())
@@ -327,13 +372,13 @@ namespace Module::TurboSound
       std::swap(first, second);
     }
     */
-    return MakePtr<MergedChiptune>(std::move(first), std::move(second));
+    return MakePtr<MergedChiptune>(std::move(submodules));
   }
 
-  Parameters::Accessor::Ptr CreateModuleProperties(Parameters::Accessor::Ptr outer, Parameters::Accessor::Ptr first,
-                                                   Parameters::Accessor::Ptr second)
+  Parameters::Accessor::Ptr CreateModuleProperties(Parameters::Accessor::Ptr outer,
+                                                   std::vector<Parameters::Accessor::Ptr> submodules)
   {
-    auto mixProps = MakePtr<MergedModuleProperties>(std::move(first), std::move(second));
+    auto mixProps = MakePtr<MergedModuleProperties>(std::move(submodules));
     return Parameters::CreateMergedAccessor(std::move(outer), std::move(mixProps));
   }
 

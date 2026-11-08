@@ -23,6 +23,8 @@
 
 #include "make_ptr.h"
 
+#include <vector>
+
 namespace Module::TS
 {
   const Debug::Stream Dbg("Module::TS");
@@ -36,56 +38,40 @@ namespace Module::TS
       , Delegate(delegate)
     {}
 
-    void SetFirstSubmoduleLocation(std::size_t offset, std::size_t size) override
+    void AddSubmoduleLocation(std::size_t offset, std::size_t size) override
     {
-      if (!LoadChiptune(offset, size, First, FirstProperties))
+      if (!LoadChiptune(offset, size))
       {
-        Dbg("Failed to create first module");
+        Dbg("Failed to create submodule {}", Locations);
+        Failed = true;
       }
-    }
-
-    void SetSecondSubmoduleLocation(std::size_t offset, std::size_t size) override
-    {
-      if (!LoadChiptune(offset, size, Second, SecondProperties))
-      {
-        Dbg("Failed to create second module");
-      }
+      ++Locations;
     }
 
     bool HasResult() const
     {
-      return First && Second;
+      return !Failed && Chiptunes.size() == Locations && Locations >= Devices::TurboSound::CHIPS
+             && Locations <= Devices::TurboSound::MAX_CHIPS;
     }
 
-    AYM::Chiptune::Ptr GetFirst() const
+    std::vector<AYM::Chiptune::Ptr> CaptureChiptunes()
     {
-      return First;
+      return std::move(Chiptunes);
     }
 
-    AYM::Chiptune::Ptr GetSecond() const
+    const std::vector<Parameters::Accessor::Ptr>& GetProperties() const
     {
-      return Second;
-    }
-
-    Parameters::Accessor::Ptr GetFirstProperties() const
-    {
-      return FirstProperties;
-    }
-
-    Parameters::Accessor::Ptr GetSecondProperties() const
-    {
-      return SecondProperties;
+      return Properties;
     }
 
   private:
-    bool LoadChiptune(std::size_t offset, std::size_t size, AYM::Chiptune::Ptr& tune,
-                      Parameters::Accessor::Ptr& properties) const
+    bool LoadChiptune(std::size_t offset, std::size_t size)
     {
       const auto content = Data.GetSubcontainer(offset, size);
       if (const auto holder = std::dynamic_pointer_cast<const AYM::Holder>(TryOpenAYModule(*content)))
       {
-        tune = holder->GetChiptune();
-        properties = holder->GetModuleProperties();
+        Chiptunes.emplace_back(holder->GetChiptune());
+        Properties.emplace_back(holder->GetModuleProperties());
         return true;
       }
       return false;
@@ -101,10 +87,10 @@ namespace Module::TS
     const Parameters::Accessor& Params;
     const Binary::Container& Data;
     const Factory& Delegate;
-    AYM::Chiptune::Ptr First;
-    AYM::Chiptune::Ptr Second;
-    Parameters::Accessor::Ptr FirstProperties;
-    Parameters::Accessor::Ptr SecondProperties;
+    std::size_t Locations = 0;
+    bool Failed = false;
+    std::vector<AYM::Chiptune::Ptr> Chiptunes;
+    std::vector<Parameters::Accessor::Ptr> Properties;
   };
 
   class Factory : public Module::Factory
@@ -122,17 +108,25 @@ namespace Module::TS
       {
         if (dataBuilder.HasResult())
         {
+          const auto& subProperties = dataBuilder.GetProperties();
           AYM::PropertiesHelper props(*properties);
           props.SetSource(*container);
-          props.SetChipsCount(Devices::TurboSound::CHIPS);
+          props.SetChipsCount(static_cast<uint_t>(subProperties.size()));
           // A composite supports everything its parts do
-          const auto firstIds = Parameters::GetString(*dataBuilder.GetFirstProperties(), ATTR_SUPPORTED_PARAMETERS);
-          const auto secondIds = Parameters::GetString(*dataBuilder.GetSecondProperties(), ATTR_SUPPORTED_PARAMETERS);
-          props.SetSupportedParameters(Parameters::IdentifiersSet::Parse(firstIds)
-                                       | Parameters::IdentifiersSet::Parse(secondIds));
-          auto moduleProperties = TurboSound::CreateModuleProperties(properties, dataBuilder.GetFirstProperties(),
-                                                                     dataBuilder.GetSecondProperties());
-          auto chiptune = TurboSound::CreateChiptune(dataBuilder.GetFirst(), dataBuilder.GetSecond());
+          // Sets view into these strings, so keep them alive till properties are stored
+          std::vector<String> subIds;
+          for (const auto& sub : subProperties)
+          {
+            subIds.emplace_back(Parameters::GetString(*sub, ATTR_SUPPORTED_PARAMETERS));
+          }
+          Parameters::IdentifiersSet supported;
+          for (const auto& ids : subIds)
+          {
+            supported = supported | Parameters::IdentifiersSet::Parse(ids);
+          }
+          props.SetSupportedParameters(supported);
+          auto moduleProperties = TurboSound::CreateModuleProperties(properties, subProperties);
+          auto chiptune = TurboSound::CreateChiptune(dataBuilder.CaptureChiptunes());
           return TurboSound::CreateHolder(std::move(chiptune), std::move(moduleProperties));
         }
       }

@@ -227,10 +227,15 @@ namespace Module::ProTracker3
         return CreateTrackInfo(*Data);
       }
 
-      TurboSound::DataIterator::Ptr CreateDataIterator(AYM::TrackParameters::Ptr first,
-                                                       AYM::TrackParameters::Ptr /*second*/) const override
+      uint_t GetChipsCount() const override
       {
-        return Vortex::CreateTurboSoundDataIterator(Data, std::move(first));
+        return Devices::TurboSound::CHIPS;
+      }
+
+      TurboSound::DataIterator::Ptr CreateDataIterator(TurboSound::TrackParametersList params) const override
+      {
+        // both chips are driven by the same module data
+        return Vortex::CreateTurboSoundDataIterator(Data, std::move(params.front()));
       }
 
     private:

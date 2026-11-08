@@ -16,11 +16,14 @@
 #include "module/holder.h"
 #include "strings/array.h"
 
+#include <vector>
+
 namespace Module::TurboSound
 {
-  const uint_t TRACK_CHANNELS = AYM::TRACK_CHANNELS * Devices::TurboSound::CHIPS;
-
   using DataIterator = Iterator<Devices::TurboSound::Registers>;
+
+  // One per chip
+  using TrackParametersList = std::vector<AYM::TrackParameters::Ptr>;
 
   class Chiptune
   {
@@ -32,14 +35,16 @@ namespace Module::TurboSound
 
     virtual FramedInformation GetInformation() const = 0;
 
-    virtual DataIterator::Ptr CreateDataIterator(AYM::TrackParameters::Ptr first,
-                                                 AYM::TrackParameters::Ptr second) const = 0;
+    virtual uint_t GetChipsCount() const = 0;
+
+    virtual DataIterator::Ptr CreateDataIterator(TrackParametersList params) const = 0;
   };
 
-  Chiptune::Ptr CreateChiptune(AYM::Chiptune::Ptr first, AYM::Chiptune::Ptr second);
+  // Submodules are played on chips in the order given
+  Chiptune::Ptr CreateChiptune(std::vector<AYM::Chiptune::Ptr> submodules);
 
-  Parameters::Accessor::Ptr CreateModuleProperties(Parameters::Accessor::Ptr outer, Parameters::Accessor::Ptr first,
-                                                   Parameters::Accessor::Ptr second);
+  Parameters::Accessor::Ptr CreateModuleProperties(Parameters::Accessor::Ptr outer,
+                                                   std::vector<Parameters::Accessor::Ptr> submodules);
 
   Holder::Ptr CreateHolder(Chiptune::Ptr chiptune, Parameters::Accessor::Ptr properties);
 }  // namespace Module::TurboSound

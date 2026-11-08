@@ -16,13 +16,17 @@
 
 namespace Devices::TurboSound
 {
+  // Classic TurboSound
   const uint_t CHIPS = 2;
-  const uint_t VOICES = AYM::VOICES * CHIPS;
+  // ZX Spectrum Next (TurboSound Next)
+  const uint_t MAX_CHIPS = 3;
+  const uint_t VOICES = AYM::VOICES * MAX_CHIPS;
 
   using AYM::TimeUnit;
   using AYM::Stamp;
 
-  using Registers = std::array<AYM::Registers, CHIPS>;
+  // Registers of unused chips are left untouched
+  using Registers = std::array<AYM::Registers, MAX_CHIPS>;
 
   struct DataChunk
   {
@@ -53,5 +57,5 @@ namespace Devices::TurboSound
   using AYM::ChipParameters;
   using AYM::MixerType;
 
-  Chip::Ptr CreateChip(ChipParameters::Ptr params, MixerType::Ptr mixer);
+  Chip::Ptr CreateChip(uint_t chips, ChipParameters::Ptr params, MixerType::Ptr mixer);
 }  // namespace Devices::TurboSound

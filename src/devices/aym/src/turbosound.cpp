@@ -19,87 +19,108 @@
 
 namespace Devices::TurboSound
 {
+  template<uint_t Count>
   class PSG
   {
   public:
     explicit PSG(const AYM::MultiVolumeTable& table)
-      : Chip0(table)
-      , Chip1(table)
+      : Chips{{AYM::PSG(table), AYM::PSG(table), AYM::PSG(table)}}
     {}
 
     void SetDutyCycle(uint_t value, uint_t mask)
     {
-      Chip0.SetDutyCycle(value, mask);
-      Chip1.SetDutyCycle(value, mask);
+      for (auto& chip : Chips)
+      {
+        chip.SetDutyCycle(value, mask);
+      }
     }
 
     void SetMuteMask(uint_t mask)
     {
-      Chip0.SetMuteMask(mask);
-      Chip1.SetMuteMask(mask >> AYM::VOICES);
+      for (auto& chip : Chips)
+      {
+        chip.SetMuteMask(mask);
+        mask >>= AYM::VOICES;
+      }
     }
 
     void Reset()
     {
-      Chip0.Reset();
-      Chip1.Reset();
+      for (auto& chip : Chips)
+      {
+        chip.Reset();
+      }
     }
 
     void SetNewData(const Registers& data)
     {
-      Chip0.SetNewData(data[0]);
-      Chip1.SetNewData(data[1]);
+      for (uint_t idx = 0; idx < Count; ++idx)
+      {
+        Chips[idx].SetNewData(data[idx]);
+      }
     }
 
     void Tick(uint_t ticks)
     {
-      Chip0.Tick(ticks);
-      Chip1.Tick(ticks);
+      for (uint_t idx = 0; idx < Count; ++idx)
+      {
+        Chips[idx].Tick(ticks);
+      }
     }
 
     Sound::Sample GetLevels() const
     {
-      using namespace Sound;
-      const Sample s0 = Chip0.GetLevels();
-      const Sample s1 = Chip1.GetLevels();
-      return Sound::Sample::FastAdd(s0, s1);
+      Sound::Sample result = Chips[0].GetLevels();
+      for (uint_t idx = 1; idx < Count; ++idx)
+      {
+        result = Sound::Sample::FastAdd(result, Chips[idx].GetLevels());
+      }
+      return result;
     }
 
   private:
-    AYM::PSG Chip0;
-    AYM::PSG Chip1;
+    std::array<AYM::PSG, MAX_CHIPS> Chips;
   };
 
+  template<uint_t Count>
   struct Traits
   {
     using DataChunkType = DataChunk;
-    using PSGType = PSG;
+    using PSGType = PSG<Count>;
     using ChipBaseType = Chip;
     static const uint_t VOICES = TurboSound::VOICES;
   };
 
-  class HalfLevelMixer : public MixerType
+  // Each chip's output is scaled to keep the sum of all chips in range
+  class ScaledLevelMixer : public MixerType
   {
   public:
-    explicit HalfLevelMixer(MixerType::Ptr delegate)
+    ScaledLevelMixer(MixerType::Ptr delegate, uint_t divisor)
       : Delegate(std::move(delegate))
       , DelegateRef(*Delegate)
+      , Divisor(divisor)
     {}
 
     Sound::Sample ApplyData(const MixerType::InDataType& in) const override
     {
       const Sound::Sample out = DelegateRef.ApplyData(in);
-      return {out.Left() / 2, out.Right() / 2};
+      return {out.Left() / Divisor, out.Right() / Divisor};
     }
 
   private:
     const MixerType::Ptr Delegate;
     const MixerType& DelegateRef;
+    const int_t Divisor;
   };
 
-  Chip::Ptr CreateChip(ChipParameters::Ptr params, MixerType::Ptr mixer)
+  Chip::Ptr CreateChip(uint_t chips, ChipParameters::Ptr params, MixerType::Ptr mixer)
   {
-    auto halfMixer = MakePtr<HalfLevelMixer>(std::move(mixer));
-    return MakePtr<AYM::SoundChip<Traits> >(std::move(params), std::move(halfMixer));
+    if (chips == MAX_CHIPS)
+    {
+      auto scaledMixer = MakePtr<ScaledLevelMixer>(std::move(mixer), MAX_CHIPS);
+      return MakePtr<AYM::SoundChip<Traits<MAX_CHIPS>>>(std::move(params), std::move(scaledMixer));
+    }
+    auto scaledMixer = MakePtr<ScaledLevelMixer>(std::move(mixer), CHIPS);
+    return MakePtr<AYM::SoundChip<Traits<CHIPS>>>(std::move(params), std::move(scaledMixer));
   }
 }  // namespace Devices::TurboSound

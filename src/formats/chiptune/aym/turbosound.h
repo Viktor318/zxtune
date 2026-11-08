@@ -24,8 +24,8 @@ namespace Formats::Chiptune
       using Ptr = std::shared_ptr<Builder>;
       virtual ~Builder() = default;
 
-      virtual void SetFirstSubmoduleLocation(std::size_t offset, std::size_t size) = 0;
-      virtual void SetSecondSubmoduleLocation(std::size_t offset, std::size_t size) = 0;
+      // Called once per chip, in chip order (2 for '02TS', 3 for '03TS' footer)
+      virtual void AddSubmoduleLocation(std::size_t offset, std::size_t size) = 0;
     };
 
     Builder& GetStubBuilder();
