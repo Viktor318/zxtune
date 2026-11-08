@@ -12,9 +12,12 @@
 
 #include "apps/zxtune-qt/supp/options.h"
 #include "apps/zxtune-qt/supp/playback_supp.h"
+#include "apps/zxtune-qt/ui/options/strings.h"
+#include "apps/zxtune-qt/ui/tools/parameters_helpers.h"
 #include "apps/zxtune-qt/ui/utils.h"
 #include "mixing.ui.h"
 
+#include "core/parameters.h"
 #include "module/attributes.h"
 #include "parameters/accessor.h"
 #include "sound/mixer_parameters.h"
@@ -23,6 +26,8 @@
 #include "string_view.h"
 
 #include <QtCore/QSignalBlocker>
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QFrame>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QSlider>
@@ -157,12 +162,13 @@ namespace
 
     QLabel* AddTo(QGridLayout& layout, int row, const QString& name)
     {
+      // column 0 is for channel on/off
       auto* label = new QLabel(name, VolumeSlider->parentWidget());
-      layout.addWidget(label, row, 0);
-      layout.addWidget(VolumeSlider, row, 1);
-      layout.addWidget(VolumeValue, row, 2);
-      layout.addWidget(PanSlider, row, 3);
-      layout.addWidget(PanValue, row, 4);
+      layout.addWidget(label, row, 1);
+      layout.addWidget(VolumeSlider, row, 2);
+      layout.addWidget(VolumeValue, row, 3);
+      layout.addWidget(PanSlider, row, 4);
+      layout.addWidget(PanValue, row, 5);
       return label;
     }
 
@@ -274,6 +280,25 @@ namespace
     std::vector<QLabel*> Names;
   };
 
+  // Mixer rows are places (left, centre, right for ABC) and the stereo layout tells which channel is
+  // played on each of them, the same way as Devices::AYM::MultiVolumeTable does
+  const unsigned LAYOUT_CHANNELS[][CHIP_CHANNELS] = {
+      {0, 1, 2},  // ABC
+      {0, 2, 1},  // ACB
+      {1, 0, 2},  // BAC
+      {1, 2, 0},  // BCA
+      {2, 0, 1},  // CAB
+      {2, 1, 0},  // CBA
+  };
+
+  struct MixerRow
+  {
+    unsigned Group = 0;
+    unsigned Place = 0;
+    QLabel* Name = nullptr;
+    QCheckBox* Enabled = nullptr;
+  };
+
   class MixingOptionsWidget
     : public UI::MixingSettingsWidget
     , public UI::Ui_MixingSettingsWidget
@@ -283,6 +308,7 @@ namespace
       : UI::MixingSettingsWidget(parent)
       , Options(GlobalOptions::Instance().Get())
       , PageKind(kind)
+      , Playback(playback)
       , State(state)
     {
       // setup self
@@ -290,7 +316,21 @@ namespace
 
       Description = new QLabel(this);
       Description->setWordWrap(true);
-      static_cast<QVBoxLayout*>(layout())->insertWidget(0, Description);
+      auto* mainLayout = static_cast<QVBoxLayout*>(layout());
+      mainLayout->insertWidget(0, Description);
+      if (PageKind == AYM)
+      {
+        auto* layoutRow = new QHBoxLayout();
+        StereoLabel = new QLabel(this);
+        StereoMode = new QComboBox(this);
+        StereoMode->addItems(UI::Options::LayoutValues());
+        StereoLabel->setBuddy(StereoMode);
+        layoutRow->addWidget(StereoLabel);
+        layoutRow->addWidget(StereoMode);
+        layoutRow->addStretch(1);
+        mainLayout->insertLayout(1, layoutRow);
+        LayoutValue = UI::Value::Bind<Parameters::ZXTune::Core::AYM::Layout>(*StereoMode, *Options);
+      }
       // playback status is shown next to the reset button
       Status = new QLabel(this);
       Status->setWordWrap(true);
@@ -308,7 +348,7 @@ namespace
           for (unsigned chan = 0; chan != CHIP_CHANNELS; ++chan)
           {
             const auto name = QString::fromLatin1("%1%2").arg(QLatin1Char(static_cast<char>('A' + chan))).arg(chip + 1);
-            AddChannel(group, row++, name, AYM_CHANNELS, chip * CHIP_CHANNELS + chan);
+            AddChannel(group, row++, name, AYM_CHANNELS, chip * CHIP_CHANNELS + chan, chip, chan);
           }
         }
       }
@@ -319,15 +359,33 @@ namespace
           auto& group = AddGroup(row++);
           for (unsigned chan = 0; chan != channels; ++chan)
           {
-            AddChannel(group, row++, QString::fromLatin1(INPUT_CHANNEL_NAMES[chan]), channels, chan);
+            AddChannel(group, row++, QString::fromLatin1(INPUT_CHANNEL_NAMES[chan]), channels, chan, channels - 3,
+                       chan);
           }
         }
       }
-      channelsLayout->setColumnStretch(1, 1);
-      channelsLayout->setColumnStretch(3, 1);
+      channelsLayout->setColumnStretch(2, 1);
+      channelsLayout->setColumnStretch(4, 1);
       Require(connect(resetButton, &QPushButton::clicked, this, &MixingOptionsWidget::Reset));
+      if (StereoMode)
+      {
+        Require(connect(StereoMode, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
+          UpdateRows();
+          if (Playback)
+          {
+            emit Playback->MixerSettingsChanged();
+          }
+        }));
+      }
       if (playback)
       {
+        Require(connect(playback, &PlaybackSupport::MixerSettingsChanged, this, [this]() {
+          if (LayoutValue)
+          {
+            LayoutValue->Reload();
+          }
+          UpdateRows();
+        }));
         Require(connect(playback, &PlaybackSupport::OnStartModule, this,
                         [this](Sound::Backend::Ptr, Playlist::Item::Data::Ptr item) {
                           State = {std::move(item), false};
@@ -365,7 +423,7 @@ namespace
     {
       VolumeHeader = new QLabel(this);
       VolumeHeader->setAlignment(Qt::AlignCenter);
-      channelsLayout->addWidget(VolumeHeader, row, 1, 1, 2);
+      channelsLayout->addWidget(VolumeHeader, row, 2, 1, 2);
       auto* panHeader = new QWidget(this);
       auto* panLayout = new QHBoxLayout(panHeader);
       panLayout->setContentsMargins(0, 0, 0, 0);
@@ -376,7 +434,7 @@ namespace
       panLayout->addWidget(LeftHeader);
       panLayout->addWidget(PanHeader, 1);
       panLayout->addWidget(RightHeader);
-      channelsLayout->addWidget(panHeader, row, 3);
+      channelsLayout->addWidget(panHeader, row, 4);
     }
 
     void AddSeparator(int row)
@@ -384,7 +442,7 @@ namespace
       auto* line = new QFrame(this);
       line->setFrameShape(QFrame::HLine);
       line->setFrameShadow(QFrame::Sunken);
-      channelsLayout->addWidget(line, row, 0, 1, 5);
+      channelsLayout->addWidget(line, row, 0, 1, 6);
     }
 
     ChannelsGroup& AddGroup(int row)
@@ -393,17 +451,125 @@ namespace
       auto font = label->font();
       font.setBold(true);
       label->setFont(font);
-      channelsLayout->addWidget(label, row, 0, 1, 5);
+      channelsLayout->addWidget(label, row, 0, 1, 6);
       Groups.emplace_back();
       Groups.back().Header = label;
       return Groups.back();
     }
 
-    void AddChannel(ChannelsGroup& group, int row, const QString& name, unsigned channels, unsigned channel)
+    void AddChannel(ChannelsGroup& group, int row, const QString& name, unsigned channels, unsigned channel,
+                    unsigned groupIndex, unsigned place)
     {
       auto* controls = new ChannelControls(*this, *Options, channels, channel);
-      group.Names.push_back(controls->AddTo(*channelsLayout, row, name));
+      auto* label = controls->AddTo(*channelsLayout, row, name);
+      group.Names.push_back(label);
       Controls.push_back(controls);
+      auto* enabled = new QCheckBox(this);
+      channelsLayout->addWidget(enabled, row, 0);
+      const auto rowIndex = Rows.size();
+      Rows.push_back({groupIndex, place, label, enabled});
+      Require(connect(enabled, &QCheckBox::toggled, this,
+                      [this, rowIndex](bool checked) { SetChannelEnabled(rowIndex, checked); }));
+    }
+
+    unsigned GetLayout() const
+    {
+      using namespace Parameters::ZXTune::Core;
+      if (State.Item)
+      {
+        if (const auto own = Parameters::Find<AYM::Layout>(*State.Item->GetModuleProperties()))
+        {
+          return static_cast<unsigned>(*own);
+        }
+      }
+      return static_cast<unsigned>(Parameters::Get<AYM::Layout>(*Options));
+    }
+
+    bool HasOwnLayout() const
+    {
+      return State.Item
+             && Parameters::Find<Parameters::ZXTune::Core::AYM::Layout>(*State.Item->GetModuleProperties());
+    }
+
+    // Channel played on the place, mono plays all channels everywhere so places are named after channels
+    unsigned GetChannel(const MixerRow& row) const
+    {
+      if (PageKind != AYM)
+      {
+        return row.Place;
+      }
+      const auto layout = GetLayout();
+      return layout < std::size(LAYOUT_CHANNELS) ? LAYOUT_CHANNELS[layout][row.Place] : row.Place;
+    }
+
+    void UpdateRows()
+    {
+      if (PageKind == AYM)
+      {
+        StereoMode->setEnabled(!HasOwnLayout());
+        StereoMode->setToolTip(HasOwnLayout() ? UI::MixingSettingsWidget::tr("The tune defines its own stereo mode")
+                                              : QString());
+        for (const auto& row : Rows)
+        {
+          row.Name->setText(QString::fromLatin1("%1%2")
+                                .arg(QLatin1Char(static_cast<char>('A' + GetChannel(row))))
+                                .arg(row.Group + 1));
+        }
+      }
+      UpdateChannelsEnabled();
+    }
+
+    // Channels are switched on/off in the current tune only, the same way as on the toolbar
+    int GetChannelBit(const MixerRow& row) const
+    {
+      const auto target = State.Item ? GetMixerTarget(*State.Item) : MixerTarget();
+      if (!target.Valid || target.Kind != PageKind || !IsGroupUsed(row.Group, target.Count))
+      {
+        return -1;
+      }
+      return PageKind == AYM ? static_cast<int>(row.Group * AYM_CHANNELS_NAMES_PER_CHIP + GetChannel(row))
+                             : static_cast<int>(row.Place);
+    }
+
+    void UpdateChannelsEnabled()
+    {
+      const auto mask = State.Item
+                            ? Parameters::Get<Parameters::ZXTune::Core::ChannelsMask>(*State.Item->GetAdjustedParameters())
+                            : 0;
+      for (const auto& row : Rows)
+      {
+        const auto bit = GetChannelBit(row);
+        const QSignalBlocker block(row.Enabled);
+        row.Enabled->setEnabled(bit >= 0);
+        row.Enabled->setChecked(bit < 0 || 0 == (mask & (Parameters::IntType(1) << bit)));
+        row.Enabled->setToolTip(UI::MixingSettingsWidget::tr("Channel on/off in the current tune"));
+      }
+    }
+
+    void SetChannelEnabled(std::size_t rowIndex, bool enabled)
+    {
+      const auto bit = GetChannelBit(Rows[rowIndex]);
+      if (bit < 0)
+      {
+        return;
+      }
+      using Parameters::ZXTune::Core::ChannelsMask;
+      const auto params = State.Item->GetAdjustedParameters();
+      auto mask = Parameters::Get<ChannelsMask>(*params);
+      const auto flag = Parameters::IntType(1) << bit;
+      mask = enabled ? (mask & ~flag) : (mask | flag);
+      if (mask)
+      {
+        Parameters::Set<ChannelsMask>(*params, mask);
+      }
+      else
+      {
+        Parameters::Remove<ChannelsMask>(*params);
+      }
+      if (Playback)
+      {
+        emit Playback->MixerSettingsChanged();
+      }
     }
 
     void SetTexts()
@@ -428,6 +594,11 @@ namespace
         Groups[0].Header->setText(UI::MixingSettingsWidget::tr("3 channels"));
         Groups[1].Header->setText(UI::MixingSettingsWidget::tr("4 channels"));
       }
+      if (StereoLabel)
+      {
+        StereoLabel->setText(UI::MixingSettingsWidget::tr("Stereo mode"));
+        UI::Options::Fill(*StereoMode, UI::Options::LayoutValues());
+      }
       VolumeHeader->setText(UI::MixingSettingsWidget::tr("Volume"));
       LeftHeader->setText(UI::MixingSettingsWidget::tr("Left"));
       PanHeader->setText(UI::MixingSettingsWidget::tr("Panning"));
@@ -444,6 +615,7 @@ namespace
       const auto target = State.Item ? GetMixerTarget(*State.Item) : MixerTarget();
       const bool applies = target.Valid && target.Kind == PageKind;
       Status->setText(GetStatusText(target, applies));
+      UpdateRows();
       // groups used by the current tune are highlighted, all are editable anyway
       for (std::size_t idx = 0; idx != Groups.size(); ++idx)
       {
@@ -512,7 +684,12 @@ namespace
   private:
     const Parameters::Container::Ptr Options;
     const Kind PageKind;
+    PlaybackSupport* const Playback;
     UI::PlaybackState State;
+    std::vector<MixerRow> Rows;
+    QLabel* StereoLabel = nullptr;
+    QComboBox* StereoMode = nullptr;
+    UI::Value* LayoutValue = nullptr;
     std::vector<ChannelControls*> Controls;
     std::vector<ChannelsGroup> Groups;
     QLabel* Description = nullptr;

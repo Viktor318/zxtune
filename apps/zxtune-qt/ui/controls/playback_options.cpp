@@ -24,6 +24,8 @@
 
 #include "contract.h"
 
+#include <QtCore/QSignalBlocker>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QLayout>
 
 #include <utility>
@@ -52,7 +54,7 @@ namespace
     PlaybackOptionsImpl(QWidget& parent, PlaybackSupport& supp, Parameters::Container::Ptr params)
       : ::PlaybackOptions(parent)
       , Params(std::move(params))
-      , Muting(*this)
+      , Muting(*this, supp)
     {
       // setup self
       setupUi(this);
@@ -65,7 +67,14 @@ namespace
       UI::Value::Bind<Parameters::ZXTune::Sound::Looped>(*isLooped, *Params);
       // AYM
       UI::Value::Bind<Parameters::ZXTune::Core::AYM::Chip>(*isYM, *Params);
-      UI::Value::Bind<Parameters::ZXTune::Core::AYM::Layout>(*aymLayout, *Params);
+      LayoutValue = UI::Value::Bind<Parameters::ZXTune::Core::AYM::Layout>(*aymLayout, *Params);
+      // stereo layout and channels mask can be also changed in the mixer
+      Require(connect(aymLayout, qOverload<int>(&QComboBox::currentIndexChanged), &supp,
+                      &PlaybackSupport::MixerSettingsChanged));
+      Require(connect(&supp, &PlaybackSupport::MixerSettingsChanged, this, [this]() {
+        LayoutValue->Reload();
+        Muting.Refresh();
+      }));
       // DAC
       UI::Value::Bind<Parameters::ZXTune::Core::DAC::Interpolation>(*isDACInterpolated, *Params);
 
@@ -96,10 +105,28 @@ namespace
     class MuteState
     {
     public:
-      explicit MuteState(Ui::PlaybackOptions& self)
+      MuteState(Ui::PlaybackOptions& self, PlaybackSupport& supp)
         : Control(self.MuteOptions)
         , Layout(self.MuteButtons)
+        , Supp(supp)
       {}
+
+      void Refresh()
+      {
+        if (!Params)
+        {
+          return;
+        }
+        State = Parameters::Get<Parameters::ZXTune::Core::ChannelsMask>(*Params);
+        for (std::size_t idx = 0; idx < Buttons.size(); ++idx)
+        {
+          if (auto* button = Buttons[idx])
+          {
+            const QSignalBlocker block(button);
+            button->setChecked(0 == (State & (Parameters::IntType(1) << idx)));
+          }
+        }
+      }
 
       void Init(const Playlist::Item::Data& item)
       {
@@ -173,12 +200,14 @@ namespace
           {
             Parameters::Remove<Parameters::ZXTune::Core::ChannelsMask>(*Params);
           }
+          emit Supp.MixerSettingsChanged();
         }
       }
 
     public:
       QFrame*& Control;
       QHBoxLayout*& Layout;
+      PlaybackSupport& Supp;
       Parameters::Container::Ptr Params;
       Parameters::IntType State{};
       std::vector<QToolButton*> Buttons{16};
@@ -222,6 +251,7 @@ namespace
     const Parameters::Container::Ptr Params;
     Parameters::Accessor::Ptr ModuleProperties;
     MuteState Muting;
+    UI::Value* LayoutValue = nullptr;
   };
 }  // namespace
 

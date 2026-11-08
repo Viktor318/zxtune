@@ -41,4 +41,6 @@ signals:
   void OnStopModule();
   void OnFinishModule();
   void ErrorOccurred(const Error&);
+  //! @brief Stereo layout or current tune's channels mask is changed by one of the controls (toolbar, mixer)
+  void MixerSettingsChanged();
 };
