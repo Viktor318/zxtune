@@ -28,26 +28,46 @@
     </layout>
    </item>
    <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-    </spacer>
-   </item>
-   <item>
     <layout class="QHBoxLayout" name="bottomLayout">
      <property name="spacing">
       <number>8</number>
      </property>
      <item>
+      <widget class="QPushButton" name="muteAllButton">
+       <property name="text">
+        <string>Mute all</string>
+       </property>
+       <property name="toolTip">
+        <string>Switch off all channels of the current tune</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="enableAllButton">
+       <property name="text">
+        <string>Enable all</string>
+       </property>
+       <property name="toolTip">
+        <string>Switch on all channels of the current tune</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="resetButton">
        <property name="text">
-        <string>Reset</string>
+        <string>Reset all sliders</string>
        </property>
        <property name="toolTip">
         <string>Restore default volume and panning of all channels</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <spacer name="buttonsSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>

@@ -281,160 +281,180 @@
         <translation>J %1</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="510"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="516"/>
         <source>The tune defines its own stereo mode</source>
         <translation>A dal saját sztereó módot ad meg</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="545"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="566"/>
         <source>Channel on/off in the current tune</source>
         <translation>Csatorna be/ki az aktuális dalban</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="579"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="612"/>
         <source>AY mixer</source>
         <translation>AY-keverő</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="580"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="613"/>
         <source>For AY/YM and TurboSound tunes (PT2, PT3, STC, ASC, SQT, PSG, YM, AY, TS...). A single chip tune uses AY 1, TurboSound uses AY 1-2 or AY 1-3.</source>
         <translation>AY/YM- és TurboSound-dalokhoz (PT2, PT3, STC, ASC, SQT, PSG, YM, AY, TS…). Az egy chipes dalok az AY 1-et, a TurboSound-dalok az AY 1–2-t vagy az AY 1–3-at használják.</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="590"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="623"/>
         <source>DAC mixer</source>
         <translation>DAC-keverő</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="591"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="624"/>
         <source>For digital (Covox, SounDrive) tunes. 3 channels: Digital Music Maker, Digital Studio, Sample Tracker. 4 channels: ProDigiTracker, Chip Tracker, SQ-Digital Tracker, Extreme Tracker.</source>
         <translation>Digitális (Covox, SounDrive) dalokhoz. 3 csatornás: Digital Music Maker, Digital Studio, Sample Tracker. 4 csatornás: ProDigiTracker, Chip Tracker, SQ-Digital Tracker, Extreme Tracker.</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="594"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="627"/>
         <source>3 channels</source>
         <translation>3 csatornás</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="595"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="628"/>
         <source>4 channels</source>
         <translation>4 csatornás</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="599"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="632"/>
         <source>Stereo mode</source>
         <translation>Sztereó mód</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="602"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="635"/>
         <source>Volume</source>
         <translation>Hangerő</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="603"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="636"/>
         <source>Left</source>
         <translation>Bal</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="604"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="637"/>
         <source>Panning</source>
         <translation>Panoráma</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="605"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="638"/>
         <source>Right</source>
         <translation>Jobb</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="640"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="673"/>
         <source>Nothing is playing.</source>
         <translation>Most nem szól dal.</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="645"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="678"/>
         <source>Paused: %1.</source>
         <translation>Szünetel: %1.</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="646"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="679"/>
         <source>Now playing: %1.</source>
         <translation>Most szól: %1.</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="649"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="682"/>
         <source>No mixer page applies to it.</source>
         <translation>Erre egyik keverőlap sem hat.</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="652"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="685"/>
         <source>Not this page but the AY mixer applies to it.</source>
         <translation>Erre nem ez a lap hat, hanem az AY-keverő.</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="653"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="686"/>
         <source>Not this page but the DAC mixer applies to it.</source>
         <translation>Erre nem ez a lap hat, hanem a DAC-keverő.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="660"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="693"/>
         <source>Paused: %1, %n AY chip(s).</source>
         <translation>
             <numerusform>Szünetel: %1, %n AY chip.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="661"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="694"/>
         <source>Now playing: %1, %n AY chip(s).</source>
         <translation>
             <numerusform>Most szól: %1, %n AY chip.</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="662"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="695"/>
         <source>AY 1 of this page applies to it.</source>
         <translation>Erre a lapon az AY 1 keverője hat.</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="663"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="696"/>
         <source>AY 1 and AY 2 of this page apply to it.</source>
         <translation>Erre a lapon az AY 1 és az AY 2 keverője hat.</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="664"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="697"/>
         <source>All three chips of this page apply to it.</source>
         <translation>Erre a lapon mindhárom chip keverője hat.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="668"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="701"/>
         <source>Paused: %1, %n channel(s).</source>
         <translation>
             <numerusform>Szünetel: %1, %n csatorna.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="669"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="702"/>
         <source>Now playing: %1, %n channel(s).</source>
         <translation>
             <numerusform>Most szól: %1, %n csatorna.</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="670"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="703"/>
         <source>The &apos;3 channels&apos; group of this page applies to it.</source>
         <translation>Erre a lapon a „3 csatornás” csoport hat.</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="671"/>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.cpp" line="704"/>
         <source>The &apos;4 channels&apos; group of this page applies to it.</source>
         <translation>Erre a lapon a „4 csatornás” csoport hat.</translation>
     </message>
     <message>
-        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.ui" line="45"/>
-        <source>Reset</source>
-        <translation>Alaphelyzet</translation>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.ui" line="38"/>
+        <source>Mute all</source>
+        <translation>Összes némítása</translation>
+    </message>
+    <message>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.ui" line="41"/>
+        <source>Switch off all channels of the current tune</source>
+        <translation>Az aktuális dal minden csatornájának kikapcsolása</translation>
     </message>
     <message>
         <location filename="../../apps/zxtune-qt/ui/preferences/mixing.ui" line="48"/>
+        <source>Enable all</source>
+        <translation>Összes engedélyezése</translation>
+    </message>
+    <message>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.ui" line="51"/>
+        <source>Switch on all channels of the current tune</source>
+        <translation>Az aktuális dal minden csatornájának bekapcsolása</translation>
+    </message>
+    <message>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.ui" line="58"/>
+        <source>Reset all sliders</source>
+        <translation>Minden csúszka alaphelyzetbe</translation>
+    </message>
+    <message>
+        <location filename="../../apps/zxtune-qt/ui/preferences/mixing.ui" line="61"/>
         <source>Restore default volume and panning of all channels</source>
         <translation>Minden csatorna hangerejének és panorámájának visszaállítása</translation>
     </message>

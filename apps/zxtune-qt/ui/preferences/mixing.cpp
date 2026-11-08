@@ -317,7 +317,9 @@ namespace
       Description = new QLabel(this);
       Description->setWordWrap(true);
       auto* mainLayout = static_cast<QVBoxLayout*>(layout());
+      // description, line, [stereo mode, line,] channels, buttons, line, status
       mainLayout->insertWidget(0, Description);
+      mainLayout->insertWidget(1, CreateLine());
       if (PageKind == AYM)
       {
         auto* layoutRow = new QHBoxLayout();
@@ -328,17 +330,19 @@ namespace
         layoutRow->addWidget(StereoLabel);
         layoutRow->addWidget(StereoMode);
         layoutRow->addStretch(1);
-        mainLayout->insertLayout(1, layoutRow);
+        mainLayout->insertLayout(2, layoutRow);
+        mainLayout->insertWidget(3, CreateLine());
         LayoutValue = UI::Value::Bind<Parameters::ZXTune::Core::AYM::Layout>(*StereoMode, *Options);
       }
-      // playback status is shown next to the reset button
+      // playback status is shown below the buttons
+      mainLayout->addWidget(CreateLine());
       Status = new QLabel(this);
       Status->setWordWrap(true);
-      bottomLayout->addWidget(Status, 1);
+      mainLayout->addWidget(Status);
+      mainLayout->addStretch(1);
 
       int row = 0;
       AddHeader(row++);
-      AddSeparator(row++);
       if (PageKind == AYM)
       {
         using Parameters::ZXTune::Sound::Mixer::AYM_CHANNELS;
@@ -367,6 +371,8 @@ namespace
       channelsLayout->setColumnStretch(2, 1);
       channelsLayout->setColumnStretch(4, 1);
       Require(connect(resetButton, &QPushButton::clicked, this, &MixingOptionsWidget::Reset));
+      Require(connect(muteAllButton, &QPushButton::clicked, this, [this]() { SetAllChannelsEnabled(false); }));
+      Require(connect(enableAllButton, &QPushButton::clicked, this, [this]() { SetAllChannelsEnabled(true); }));
       if (StereoMode)
       {
         Require(connect(StereoMode, qOverload<int>(&QComboBox::currentIndexChanged), this, [this]() {
@@ -437,12 +443,12 @@ namespace
       channelsLayout->addWidget(panHeader, row, 4);
     }
 
-    void AddSeparator(int row)
+    QFrame* CreateLine()
     {
       auto* line = new QFrame(this);
       line->setFrameShape(QFrame::HLine);
       line->setFrameShadow(QFrame::Sunken);
-      channelsLayout->addWidget(line, row, 0, 1, 6);
+      return line;
     }
 
     ChannelsGroup& AddGroup(int row)
@@ -531,8 +537,23 @@ namespace
                              : static_cast<int>(row.Place);
     }
 
+    // Mask of all the current tune's channels if this page applies to it, AY chips have N and E too
+    Parameters::IntType GetAllChannelsMask() const
+    {
+      const auto target = State.Item ? GetMixerTarget(*State.Item) : MixerTarget();
+      if (!target.Valid || target.Kind != PageKind)
+      {
+        return 0;
+      }
+      const auto channels = PageKind == AYM ? target.Count * AYM_CHANNELS_NAMES_PER_CHIP : target.Count;
+      return (Parameters::IntType(1) << channels) - 1;
+    }
+
     void UpdateChannelsEnabled()
     {
+      const bool applies = GetAllChannelsMask() != 0;
+      muteAllButton->setEnabled(applies);
+      enableAllButton->setEnabled(applies);
       const auto mask = State.Item
                             ? Parameters::Get<Parameters::ZXTune::Core::ChannelsMask>(*State.Item->GetAdjustedParameters())
                             : 0;
@@ -553,11 +574,23 @@ namespace
       {
         return;
       }
+      const auto mask = Parameters::Get<Parameters::ZXTune::Core::ChannelsMask>(*State.Item->GetAdjustedParameters());
+      const auto flag = Parameters::IntType(1) << bit;
+      SetChannelsMask(enabled ? (mask & ~flag) : (mask | flag));
+    }
+
+    void SetAllChannelsEnabled(bool enabled)
+    {
+      if (const auto all = GetAllChannelsMask())
+      {
+        SetChannelsMask(enabled ? 0 : all);
+      }
+    }
+
+    void SetChannelsMask(Parameters::IntType mask)
+    {
       using Parameters::ZXTune::Core::ChannelsMask;
       const auto params = State.Item->GetAdjustedParameters();
-      auto mask = Parameters::Get<ChannelsMask>(*params);
-      const auto flag = Parameters::IntType(1) << bit;
-      mask = enabled ? (mask & ~flag) : (mask | flag);
       if (mask)
       {
         Parameters::Set<ChannelsMask>(*params, mask);
