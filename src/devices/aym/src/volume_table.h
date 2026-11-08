@@ -89,8 +89,8 @@ namespace Devices::AYM
           {{0, 2, 1}},  // ACB
           {{1, 0, 2}},  // BAC
           {{1, 2, 0}},  // BCA
-          {{2, 1, 0}},  // CBA
           {{2, 0, 1}},  // CAB
+          {{2, 1, 0}},  // CBA
       };
       return type == LAYOUT_MONO ? nullptr : LAYOUTS + type;
     }
