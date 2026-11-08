@@ -28,6 +28,9 @@ namespace Devices::AYM
     void SetMuteMask(uint_t mask)
     {
       MuteMask = mask;
+      MutedLevels = ((mask & CHANNEL_MASK_A) ? HIGH_LEVEL_A : LOW_LEVEL)
+                    | ((mask & CHANNEL_MASK_B) ? HIGH_LEVEL_B : LOW_LEVEL)
+                    | ((mask & CHANNEL_MASK_C) ? HIGH_LEVEL_C : LOW_LEVEL);
     }
 
     void SetMixer(uint_t mixer)
@@ -35,6 +38,9 @@ namespace Devices::AYM
       GenA.SetMasked(0 != (mixer & Registers::MASK_TONEA));
       GenB.SetMasked(0 != (mixer & Registers::MASK_TONEB));
       GenC.SetMasked(0 != (mixer & Registers::MASK_TONEC));
+      ToneOffMask = ((mixer & Registers::MASK_TONEA) ? HIGH_LEVEL_A : LOW_LEVEL)
+                    | ((mixer & Registers::MASK_TONEB) ? HIGH_LEVEL_B : LOW_LEVEL)
+                    | ((mixer & Registers::MASK_TONEC) ? HIGH_LEVEL_C : LOW_LEVEL);
       NoiseMask = HIGH_LEVEL;
       if (0 == (mixer & Registers::MASK_NOISEA))
       {
@@ -100,7 +106,9 @@ namespace Devices::AYM
       Levels = 0;
       NoiseMask = HIGH_LEVEL;
       EnvelopeMask = LOW_LEVEL;
+      ToneOffMask = HIGH_LEVEL;
       MuteMask = LOW_LEVEL;
+      MutedLevels = LOW_LEVEL;
     }
 
     void Tick(uint_t ticks)
@@ -118,17 +126,17 @@ namespace Devices::AYM
       const uint_t level = (MuteMask & CHANNEL_MASK_E) || !EnvelopeMask
                                ? Levels
                                : (EnvelopeMask * GenE.GetLevel()) | Levels;
+      // muted noise: channels playing noise only would give a constant level (audible clicks on volume changes),
+      // so they are silent, channels playing tone and noise keep the tone
       const uint_t noise = (MuteMask & CHANNEL_MASK_N)
-                               ? HIGH_LEVEL
+                               ? HIGH_LEVEL ^ (ToneOffMask & ~NoiseMask)
                                : (NoiseMask != HIGH_LEVEL ? NoiseMask | GenN.GetLevel() : NoiseMask);
-      const uint_t toneA = (MuteMask & CHANNEL_MASK_A) ? HIGH_LEVEL
-                                                       : GenA.GetLevel<HIGH_LEVEL ^ HIGH_LEVEL_A, HIGH_LEVEL>();
-      const uint_t toneB = (MuteMask & CHANNEL_MASK_B) ? HIGH_LEVEL
-                                                       : GenB.GetLevel<HIGH_LEVEL ^ HIGH_LEVEL_B, HIGH_LEVEL>();
-      const uint_t toneC = (MuteMask & CHANNEL_MASK_C) ? HIGH_LEVEL
-                                                       : GenC.GetLevel<HIGH_LEVEL ^ HIGH_LEVEL_C, HIGH_LEVEL>();
+      const uint_t toneA = GenA.GetLevel<HIGH_LEVEL ^ HIGH_LEVEL_A, HIGH_LEVEL>();
+      const uint_t toneB = GenB.GetLevel<HIGH_LEVEL ^ HIGH_LEVEL_B, HIGH_LEVEL>();
+      const uint_t toneC = GenC.GetLevel<HIGH_LEVEL ^ HIGH_LEVEL_C, HIGH_LEVEL>();
 
-      return level & toneA & toneB & toneC & noise;
+      // muted channels are silent (level 0), not just without tone
+      return level & toneA & toneB & toneC & noise & ~MutedLevels;
     }
 
   private:
@@ -154,6 +162,8 @@ namespace Devices::AYM
     uint_t Levels = 0;
     uint_t NoiseMask = HIGH_LEVEL;
     uint_t EnvelopeMask = LOW_LEVEL;
+    uint_t ToneOffMask = HIGH_LEVEL;
     uint_t MuteMask = LOW_LEVEL;
+    uint_t MutedLevels = LOW_LEVEL;
   };
 }  // namespace Devices::AYM
