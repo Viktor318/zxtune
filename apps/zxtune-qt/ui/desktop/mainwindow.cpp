@@ -126,6 +126,11 @@ namespace
       Require(connect(MixerButton, &QPushButton::clicked, this, &DesktopMainWindowImpl::ShowMixer));
       SetMixerActionText();
       UpdateMinimumWidth();
+      // preferences opened at exit are reopened at start, as they were (page, size and place)
+      if (Parameters::Get<Parameters::ZXTuneQT::UI::PreferencesOpened>(*Options))
+      {
+        QTimer::singleShot(0, this, &DesktopMainWindowImpl::ShowPreferences);
+      }
       if (Update::CheckOperation* op = Update::CheckOperation::Create(*this))
       {
         Require(connect(actionCheckUpdates, &QAction::triggered, op, &Update::CheckOperation::Execute));
@@ -179,6 +184,7 @@ namespace
     void closeEvent(QCloseEvent* event) override
     {
       Playback->Stop();
+      Parameters::Set<Parameters::ZXTuneQT::UI::PreferencesOpened>(*Options, UI::ClosePreferencesDialog());
       State->Save();
       MultiPlaylist->Teardown();
       event->accept();

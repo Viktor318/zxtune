@@ -22,6 +22,13 @@ namespace Parameters::ZXTuneQT::UI
     static constexpr auto Key = Prefix + "Language"_id;
   };
 
+  //! @brief Preferences window was opened when the program was closed, so it's reopened at start
+  struct PreferencesOpened : Value<bool>
+  {
+    static constexpr auto Key = Prefix + "PreferencesOpened"_id;
+    static constexpr Type Default = false;
+  };
+
   // Per-widget state sub-namespace suffixes; the namespace is dynamic, so these are keys, not descriptors
   const auto PARAM_GEOMETRY = "Geometry"sv;
   const auto PARAM_LAYOUT = "Layout"sv;

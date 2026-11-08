@@ -129,10 +129,16 @@ namespace
 
 namespace UI
 {
+  QPointer<PreferencesDialog>& GetPreferencesDialogInstance()
+  {
+    static QPointer<PreferencesDialog> instance;
+    return instance;
+  }
+
   // Modeless and single: playback can be controlled while settings are opened
   PreferencesDialog& GetPreferencesDialog(QWidget& parent, PlaybackSupport& playback, const PlaybackState& state)
   {
-    static QPointer<PreferencesDialog> instance;
+    auto& instance = GetPreferencesDialogInstance();
     if (!instance)
     {
       instance = new PreferencesDialog(parent, playback, state);
@@ -150,5 +156,17 @@ namespace UI
     auto& dialog = GetPreferencesDialog(parent, playback, state);
     dialog.ShowMixer(state);
     dialog.Activate();
+  }
+
+  bool ClosePreferencesDialog()
+  {
+    auto& instance = GetPreferencesDialogInstance();
+    if (!instance || !instance->isVisible())
+    {
+      return false;
+    }
+    // finishes the dialog, so its state is saved
+    instance->close();
+    return true;
   }
 }  // namespace UI

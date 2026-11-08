@@ -20,4 +20,7 @@ namespace UI
   void ShowPreferencesDialog(QWidget& parent, PlaybackSupport& playback, const PlaybackState& state);
   //! @brief Show preferences opened at the mixer page applicable to the current tune (AY mixer by default)
   void ShowMixerDialog(QWidget& parent, PlaybackSupport& playback, const PlaybackState& state);
+  //! @brief Close preferences (saving its state) if opened
+  //! @return true if it was opened
+  bool ClosePreferencesDialog();
 }  // namespace UI
