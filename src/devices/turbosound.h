@@ -13,6 +13,7 @@
 #include "devices/aym/chip.h"
 
 #include <array>
+#include <vector>
 
 namespace Devices::TurboSound
 {
@@ -57,5 +58,8 @@ namespace Devices::TurboSound
   using AYM::ChipParameters;
   using AYM::MixerType;
 
-  Chip::Ptr CreateChip(uint_t chips, ChipParameters::Ptr params, MixerType::Ptr mixer);
+  // One mixer per chip, 2 or 3 chips
+  using Mixers = std::vector<MixerType::Ptr>;
+
+  Chip::Ptr CreateChip(ChipParameters::Ptr params, Mixers mixers);
 }  // namespace Devices::TurboSound

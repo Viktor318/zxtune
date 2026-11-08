@@ -317,11 +317,16 @@ namespace Module::TurboSound
 
   Devices::TurboSound::Chip::Ptr CreateChip(uint_t chips, uint_t samplerate, Parameters::Accessor::Ptr params)
   {
+    // per-chip mixers are set up by (3 * chips)-channel mixer parameters
     using MixerType = Sound::ThreeChannelsMatrixMixer;
-    auto mixer = MixerType::Create();
-    auto pollParams = Sound::CreateMixerNotificationParameters(std::move(params), mixer);
+    std::vector<MixerType::Ptr> mixers;
+    for (uint_t idx = 0; idx < chips; ++idx)
+    {
+      mixers.emplace_back(MixerType::Create());
+    }
+    auto pollParams = Sound::CreateMixerNotificationParameters(std::move(params), mixers);
     auto chipParams = AYM::ChipParameters::Create(samplerate, std::move(pollParams));
-    return Devices::TurboSound::CreateChip(chips, std::move(chipParams), std::move(mixer));
+    return Devices::TurboSound::CreateChip(std::move(chipParams), {mixers.begin(), mixers.end()});
   }
 
   class Holder : public Module::Holder

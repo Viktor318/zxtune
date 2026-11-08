@@ -18,6 +18,7 @@
 
 #include <array>
 #include <utility>
+#include <vector>
 
 namespace Sound
 {
@@ -52,6 +53,50 @@ namespace Sound
     GetMatrix<Channels>(params, res);
     mixer.SetMatrix(res);
   }
+
+  void FillMixerPart(const Parameters::Accessor& params, uint_t totalChannels, uint_t firstChannel,
+                     ThreeChannelsMatrixMixer& mixer)
+  {
+    ThreeChannelsMatrixMixer::Matrix res;
+    MultiConfigValue row;
+    for (uint_t inChan = 0; inChan != res.size(); ++inChan)
+    {
+      GetMatrixRow(params, totalChannels, firstChannel + inChan, row);
+      res[inChan] = Gain(row[0], row[1]);
+    }
+    mixer.SetMatrix(res);
+  }
+
+  // Several 3-channel mixers (e.g. TurboSound chips) filled from consecutive rows of one bigger matrix
+  class MultiMixerNotificationParameters : public Parameters::DelegatedAccessor
+  {
+  public:
+    MultiMixerNotificationParameters(Parameters::Accessor::Ptr params,
+                                     std::vector<ThreeChannelsMatrixMixer::Ptr> mixers)
+      : Parameters::DelegatedAccessor(std::move(params))
+      , Mixers(std::move(mixers))
+      , LastVersion(~Delegate->Version())
+    {}
+
+    uint_t Version() const override
+    {
+      const uint_t newVers = Delegate->Version();
+      if (newVers != LastVersion)
+      {
+        const auto totalChannels = static_cast<uint_t>(Mixers.size() * 3);
+        for (std::size_t idx = 0; idx < Mixers.size(); ++idx)
+        {
+          FillMixerPart(*Delegate, totalChannels, static_cast<uint_t>(idx * 3), *Mixers[idx]);
+        }
+        LastVersion = newVers;
+      }
+      return newVers;
+    }
+
+  private:
+    const std::vector<ThreeChannelsMatrixMixer::Ptr> Mixers;
+    mutable uint_t LastVersion;
+  };
 
   template<class MixerType>
   class MixerNotificationParameters : public Parameters::DelegatedAccessor
@@ -110,5 +155,11 @@ namespace Sound
                                                               FourChannelsMatrixMixer::Ptr mixer)
   {
     return CreateMixerNotificationParametersInternal<4>(std::move(delegate), std::move(mixer));
+  }
+
+  Parameters::Accessor::Ptr CreateMixerNotificationParameters(Parameters::Accessor::Ptr delegate,
+                                                              std::vector<ThreeChannelsMatrixMixer::Ptr> mixers)
+  {
+    return MakePtr<MultiMixerNotificationParameters>(std::move(delegate), std::move(mixers));
   }
 }  // namespace Sound
