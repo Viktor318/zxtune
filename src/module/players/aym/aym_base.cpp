@@ -17,6 +17,7 @@
 #include "debug/log.h"
 #include "math/numeric.h"
 #include "sound/mixer_factory.h"
+#include "sound/mixer_parameters.h"
 
 #include "make_ptr.h"
 
@@ -146,7 +147,9 @@ namespace Module::AYM
   {
     using MixerType = Sound::ThreeChannelsMatrixMixer;
     auto mixer = MixerType::Create();
-    auto pollParams = Sound::CreateMixerNotificationParameters(std::move(params), mixer);
+    // same mixer settings as the first chip of TurboSound
+    auto pollParams = Sound::CreateMixerNotificationParameters(std::move(params), {mixer},
+                                                               Parameters::ZXTune::Sound::Mixer::AYM_CHANNELS);
     auto chipParams = AYM::ChipParameters::Create(samplerate, std::move(pollParams));
     return Devices::AYM::CreateChip(std::move(chipParams), std::move(mixer));
   }

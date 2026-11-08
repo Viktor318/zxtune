@@ -14,6 +14,7 @@
 #include "sound/mixer_parameters.h"
 #include "sound/parameters.h"
 
+#include "contract.h"
 #include "make_ptr.h"
 
 #include <array>
@@ -72,9 +73,10 @@ namespace Sound
   {
   public:
     MultiMixerNotificationParameters(Parameters::Accessor::Ptr params,
-                                     std::vector<ThreeChannelsMatrixMixer::Ptr> mixers)
+                                     std::vector<ThreeChannelsMatrixMixer::Ptr> mixers, uint_t totalChannels)
       : Parameters::DelegatedAccessor(std::move(params))
       , Mixers(std::move(mixers))
+      , TotalChannels(totalChannels)
       , LastVersion(~Delegate->Version())
     {}
 
@@ -83,10 +85,9 @@ namespace Sound
       const uint_t newVers = Delegate->Version();
       if (newVers != LastVersion)
       {
-        const auto totalChannels = static_cast<uint_t>(Mixers.size() * 3);
         for (std::size_t idx = 0; idx < Mixers.size(); ++idx)
         {
-          FillMixerPart(*Delegate, totalChannels, static_cast<uint_t>(idx * 3), *Mixers[idx]);
+          FillMixerPart(*Delegate, TotalChannels, static_cast<uint_t>(idx * 3), *Mixers[idx]);
         }
         LastVersion = newVers;
       }
@@ -95,6 +96,7 @@ namespace Sound
 
   private:
     const std::vector<ThreeChannelsMatrixMixer::Ptr> Mixers;
+    const uint_t TotalChannels;
     mutable uint_t LastVersion;
   };
 
@@ -158,8 +160,10 @@ namespace Sound
   }
 
   Parameters::Accessor::Ptr CreateMixerNotificationParameters(Parameters::Accessor::Ptr delegate,
-                                                              std::vector<ThreeChannelsMatrixMixer::Ptr> mixers)
+                                                              std::vector<ThreeChannelsMatrixMixer::Ptr> mixers,
+                                                              uint_t totalChannels)
   {
-    return MakePtr<MultiMixerNotificationParameters>(std::move(delegate), std::move(mixers));
+    Require(mixers.size() * 3 <= totalChannels);
+    return MakePtr<MultiMixerNotificationParameters>(std::move(delegate), std::move(mixers), totalChannels);
   }
 }  // namespace Sound

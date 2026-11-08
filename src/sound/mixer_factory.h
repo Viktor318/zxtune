@@ -24,7 +24,9 @@ namespace Sound
                                                               ThreeChannelsMatrixMixer::Ptr mixer);
   Parameters::Accessor::Ptr CreateMixerNotificationParameters(Parameters::Accessor::Ptr delegate,
                                                               FourChannelsMatrixMixer::Ptr mixer);
-  //! @brief 3-channel mixers filled from the rows of (3 * mixers.size())-channel mixer parameters
+  //! @brief 3-channel mixers filled from consecutive rows of totalChannels-channel mixer parameters
+  //! @note AY/YM chips (single and TurboSound) use 9-channel parameters: 3 rows per chip
   Parameters::Accessor::Ptr CreateMixerNotificationParameters(Parameters::Accessor::Ptr delegate,
-                                                              std::vector<ThreeChannelsMatrixMixer::Ptr> mixers);
+                                                              std::vector<ThreeChannelsMatrixMixer::Ptr> mixers,
+                                                              uint_t totalChannels);
 }  // namespace Sound

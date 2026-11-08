@@ -18,6 +18,7 @@
 #include "parameters/merged_accessor.h"
 #include "parameters/visitor.h"
 #include "sound/mixer_factory.h"
+#include "sound/mixer_parameters.h"
 #include "tools/iterators.h"
 
 #include "error.h"
@@ -317,14 +318,15 @@ namespace Module::TurboSound
 
   Devices::TurboSound::Chip::Ptr CreateChip(uint_t chips, uint_t samplerate, Parameters::Accessor::Ptr params)
   {
-    // per-chip mixers are set up by (3 * chips)-channel mixer parameters
+    // per-chip mixers are set up by the rows of AY mixer parameters
     using MixerType = Sound::ThreeChannelsMatrixMixer;
     std::vector<MixerType::Ptr> mixers;
     for (uint_t idx = 0; idx < chips; ++idx)
     {
       mixers.emplace_back(MixerType::Create());
     }
-    auto pollParams = Sound::CreateMixerNotificationParameters(std::move(params), mixers);
+    auto pollParams = Sound::CreateMixerNotificationParameters(std::move(params), mixers,
+                                                               Parameters::ZXTune::Sound::Mixer::AYM_CHANNELS);
     auto chipParams = AYM::ChipParameters::Create(samplerate, std::move(pollParams));
     return Devices::TurboSound::CreateChip(std::move(chipParams), {mixers.begin(), mixers.end()});
   }

@@ -44,13 +44,7 @@ namespace Parameters::ZXTune::Sound::Mixer
       },
   };
 
-  // TurboSound: chips' A/B/C in a row, each chip defaults to 3-channel mixer
-  const Level MIXERS_6[6][2] = {
-      {{Prefix + "6.0_0"_id, 100}, {Prefix + "6.0_1"_id, 0}}, {{Prefix + "6.1_0"_id, 60}, {Prefix + "6.1_1"_id, 60}},
-      {{Prefix + "6.2_0"_id, 0}, {Prefix + "6.2_1"_id, 100}}, {{Prefix + "6.3_0"_id, 100}, {Prefix + "6.3_1"_id, 0}},
-      {{Prefix + "6.4_0"_id, 60}, {Prefix + "6.4_1"_id, 60}}, {{Prefix + "6.5_0"_id, 0}, {Prefix + "6.5_1"_id, 100}},
-  };
-
+  // AY/YM chips (single or TurboSound): chips' A/B/C in a row, each chip defaults to 3-channel mixer
   const Level MIXERS_9[9][2] = {
       {{Prefix + "9.0_0"_id, 100}, {Prefix + "9.0_1"_id, 0}}, {{Prefix + "9.1_0"_id, 60}, {Prefix + "9.1_1"_id, 60}},
       {{Prefix + "9.2_0"_id, 0}, {Prefix + "9.2_1"_id, 100}}, {{Prefix + "9.3_0"_id, 100}, {Prefix + "9.3_1"_id, 0}},
@@ -63,8 +57,6 @@ namespace Parameters::ZXTune::Sound::Mixer
   {
     switch (totalChannels)
     {
-    case 6:
-      return MIXERS_6[inChannel][outChannel];
     case 9:
       return MIXERS_9[inChannel][outChannel];
     default:
