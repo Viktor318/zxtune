@@ -114,9 +114,10 @@ namespace Devices::AYM
 
     uint_t GetLevels() const
     {
-      const uint_t level = (MuteMask & CHANNEL_MASK_E)
-                               ? HIGH_LEVEL
-                               : (EnvelopeMask ? (EnvelopeMask * GenE.GetLevel()) | Levels : Levels);
+      // muted envelope silences channels using it, others keep their own levels
+      const uint_t level = (MuteMask & CHANNEL_MASK_E) || !EnvelopeMask
+                               ? Levels
+                               : (EnvelopeMask * GenE.GetLevel()) | Levels;
       const uint_t noise = (MuteMask & CHANNEL_MASK_N)
                                ? HIGH_LEVEL
                                : (NoiseMask != HIGH_LEVEL ? NoiseMask | GenN.GetLevel() : NoiseMask);
