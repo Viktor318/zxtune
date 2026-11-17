@@ -437,6 +437,56 @@ namespace Formats::Chiptune
     static_assert(sizeof(Version13::RawPattern) * alignof(Version13::RawPattern) == 16896, "Invalid layout");
     static_assert(sizeof(Version13::RawHeader) * alignof(Version13::RawHeader) == 4341209, "Invalid layout");
 
+    class StubChannelBuilder : public StubChannelBuilderImpl<TFMMusicMaker::ChannelBuilder>
+
+    {
+
+    public:
+      void SetKeyOff() override {}
+
+      void SetInstrument(uint_t ins) override {}
+
+      void SetArpeggio(uint_t add1, uint_t add2) override {}
+
+      void SetSlide(int_t step) override {}
+
+      void SetPortamento(int_t step) override {}
+
+      void SetVibrato(uint_t speed, uint_t depth) override {}
+
+      void SetTotalLevel(uint_t op, uint_t value) override {}
+
+      void SetVolumeSlide(uint_t up, uint_t down) override {}
+
+      void SetSpecialMode(bool on) override {}
+
+      void SetToneOffset(uint_t op, uint_t offset) override {}
+
+      void SetMultiple(uint_t op, uint_t val) override {}
+
+      void SetOperatorsMixing(uint_t mask) override {}
+
+      void SetLoopStart() override {}
+
+      void SetLoopEnd(uint_t additionalCount) override {}
+
+      void SetPane(uint_t pane) override {}
+
+      void SetNoteRetrig(uint_t period) override {}
+
+      void SetNoteCut(uint_t quirk) override {}
+
+      void SetNoteDelay(uint_t quirk) override {}
+
+      void SetDropEffects() override {}
+
+      void SetFeedback(uint_t val) override {}
+
+      void SetTempoInterleave(uint_t val) override {}
+
+      void SetTempoValues(uint_t even, uint_t odd) override {}
+    };
+
     class StubBuilder : public Builder
     {
     public:
@@ -454,37 +504,13 @@ namespace Formats::Chiptune
 
       PatternBuilder& StartPattern(uint_t /*index*/) override
       {
-        return GetStubPatternBuilder();
+        return GetStubPatternBuilder<StubChannelBuilder>();
       }
-
-      void StartChannel(uint_t /*index*/) override {}
-      void SetKeyOff() override {}
-      void SetNote(uint_t /*note*/) override {}
-      void SetVolume(uint_t /*vol*/) override {}
-      void SetInstrument(uint_t /*ins*/) override {}
-      void SetArpeggio(uint_t /*add1*/, uint_t /*add2*/) override {}
-      void SetSlide(int_t /*step*/) override {}
-      void SetPortamento(int_t /*step*/) override {}
-      void SetVibrato(uint_t /*speed*/, uint_t /*depth*/) override {}
-      void SetTotalLevel(uint_t /*op*/, uint_t /*value*/) override {}
-      void SetVolumeSlide(uint_t /*up*/, uint_t /*down*/) override {}
-      void SetSpecialMode(bool /*on*/) override {}
-      void SetToneOffset(uint_t /*op*/, uint_t /*offset*/) override {}
-      void SetMultiple(uint_t /*op*/, uint_t /*val*/) override {}
-      void SetOperatorsMixing(uint_t /*mask*/) override {}
-      void SetLoopStart() override {}
-      void SetLoopEnd(uint_t /*additionalCount*/) override {}
-      void SetPane(uint_t /*pane*/) override {}
-      void SetNoteRetrig(uint_t /*period*/) override {}
-      void SetNoteCut(uint_t /*quirk*/) override {}
-      void SetNoteDelay(uint_t /*quirk*/) override {}
-      void SetDropEffects() override {}
-      void SetFeedback(uint_t /*val*/) override {}
-      void SetTempoInterleave(uint_t /*val*/) override {}
-      void SetTempoValues(uint_t /*even*/, uint_t /*odd*/) override {}
     };
 
-    class StatisticCollectingBuilder : public Builder
+    class StatisticCollectingBuilder
+      : public Builder
+      , public PatternBuilderProxy<TFMMusicMaker::ChannelBuilder>
     {
     public:
       explicit StatisticCollectingBuilder(Builder& delegate)
@@ -523,136 +549,147 @@ namespace Formats::Chiptune
         return Delegate.SetPositions(std::move(positions));
       }
 
-      PatternBuilder& StartPattern(uint_t index) override
+      TFMMusicMaker::PatternBuilder& StartPattern(uint_t index) override
       {
         assert(UsedPatterns.Contain(index));
-        return Delegate.StartPattern(index);
+        BindPattern(Delegate.StartPattern(index));
+        return *this;
       }
 
-      void StartChannel(uint_t index) override
+      void SetRest() override
       {
-        Delegate.StartChannel(index);
+        return GetChannel().SetRest();
+      }
+
+      void SetSample(uint_t sample) override
+      {
+        return GetChannel().SetSample(sample);
+      }
+
+      void SetOrnament(uint_t ornament) override
+      {
+        return GetChannel().SetOrnament(ornament);
       }
 
       void SetKeyOff() override
       {
-        return Delegate.SetKeyOff();
+        return GetChannel().SetKeyOff();
       }
 
       void SetNote(uint_t note) override
       {
-        return Delegate.SetNote(note);
+        return GetChannel().SetNote(note);
       }
 
       void SetVolume(uint_t vol) override
       {
-        return Delegate.SetVolume(vol);
+        return GetChannel().SetVolume(vol);
       }
 
       void SetInstrument(uint_t ins) override
       {
         UsedInstruments.Insert(ins);
-        return Delegate.SetInstrument(ins);
+        return GetChannel().SetInstrument(ins);
       }
 
       void SetArpeggio(uint_t add1, uint_t add2) override
       {
-        return Delegate.SetArpeggio(add1, add2);
+        return GetChannel().SetArpeggio(add1, add2);
       }
 
       void SetSlide(int_t step) override
       {
-        return Delegate.SetSlide(step);
+        return GetChannel().SetSlide(step);
       }
 
       void SetPortamento(int_t step) override
       {
-        return Delegate.SetPortamento(step);
+        return GetChannel().SetPortamento(step);
       }
 
       void SetVibrato(uint_t speed, uint_t depth) override
       {
-        return Delegate.SetVibrato(speed, depth);
+        return GetChannel().SetVibrato(speed, depth);
       }
 
       void SetTotalLevel(uint_t op, uint_t value) override
       {
-        return Delegate.SetTotalLevel(op, value);
+        return GetChannel().SetTotalLevel(op, value);
       }
 
       void SetVolumeSlide(uint_t up, uint_t down) override
       {
-        return Delegate.SetVolumeSlide(up, down);
+        return GetChannel().SetVolumeSlide(up, down);
       }
 
       void SetSpecialMode(bool on) override
       {
-        return Delegate.SetSpecialMode(on);
+        return GetChannel().SetSpecialMode(on);
       }
 
       void SetToneOffset(uint_t op, uint_t offset) override
       {
-        return Delegate.SetToneOffset(op, offset);
+        return GetChannel().SetToneOffset(op, offset);
       }
 
       void SetMultiple(uint_t op, uint_t val) override
       {
-        return Delegate.SetMultiple(op, val);
+        return GetChannel().SetMultiple(op, val);
       }
 
       void SetOperatorsMixing(uint_t mask) override
       {
-        return Delegate.SetOperatorsMixing(mask);
+        return GetChannel().SetOperatorsMixing(mask);
       }
 
       void SetLoopStart() override
       {
-        return Delegate.SetLoopStart();
+        return GetChannel().SetLoopStart();
       }
 
       void SetLoopEnd(uint_t additionalCount) override
       {
-        return Delegate.SetLoopEnd(additionalCount);
+        return GetChannel().SetLoopEnd(additionalCount);
       }
 
       void SetPane(uint_t pane) override
       {
-        return Delegate.SetPane(pane);
+        return GetChannel().SetPane(pane);
       }
 
       void SetNoteRetrig(uint_t period) override
       {
-        return Delegate.SetNoteRetrig(period);
+        return GetChannel().SetNoteRetrig(period);
       }
 
       void SetNoteCut(uint_t quirk) override
       {
-        return Delegate.SetNoteCut(quirk);
+        return GetChannel().SetNoteCut(quirk);
       }
 
       void SetNoteDelay(uint_t quirk) override
       {
-        return Delegate.SetNoteDelay(quirk);
+        return GetChannel().SetNoteDelay(quirk);
       }
 
       void SetDropEffects() override
       {
-        return Delegate.SetDropEffects();
+        return GetChannel().SetDropEffects();
       }
 
       void SetFeedback(uint_t val) override
       {
-        return Delegate.SetFeedback(val);
+        return GetChannel().SetFeedback(val);
       }
 
       void SetTempoInterleave(uint_t val) override
       {
-        return Delegate.SetTempoInterleave(val);
+        return GetChannel().SetTempoInterleave(val);
       }
 
       void SetTempoValues(uint_t even, uint_t odd) override
       {
-        return Delegate.SetTempoValues(even, odd);
+        return GetChannel().SetTempoValues(even, odd);
       }
 
       const Indices& GetUsedPatterns() const
@@ -852,8 +889,8 @@ namespace Formats::Chiptune
           pattern.GetLine(lineIdx, line);
           if (const uint_t hasData = line.HasData())
           {
-            patBuilder.StartLine(lineIdx);
-            ParseLine(line, hasData, target);
+            auto& dstLine = patBuilder.StartLine(lineIdx);
+            ParseLine(line, hasData, dstLine);
           }
           else if (lineIdx == patSize - 1)
           {
@@ -863,19 +900,19 @@ namespace Formats::Chiptune
         }
       }
 
-      static void ParseLine(const Line& line, uint_t hasData, Builder& target)
+      static void ParseLine(const Line& line, uint_t hasData, LineBuilder& dstLine)
       {
         for (uint_t idx = 0; idx != line.Channels.size(); ++idx)
         {
           if (0 != (hasData & (1 << idx)))
           {
-            target.StartChannel(idx);
-            ParseChannel(line.Channels[idx], target);
+            auto& channel = dstLine.StartChannel(idx);
+            ParseChannel(line.Channels[idx], channel);
           }
         }
       }
 
-      static void ParseChannel(const Cell& cell, Builder& target)
+      static void ParseChannel(const Cell& cell, ChannelBuilder& target)
       {
         if (cell.IsKeyOff())
         {
@@ -903,7 +940,7 @@ namespace Formats::Chiptune
         }
       }
 
-      static void ParseEffect(const Effect& eff, Builder& target)
+      static void ParseEffect(const Effect& eff, ChannelBuilder& target)
       {
         switch (eff.Code)
         {
@@ -967,7 +1004,7 @@ namespace Formats::Chiptune
         }
       }
 
-      static void ParseExtEffect(uint_t paramX, uint_t paramY, Builder& target)
+      static void ParseExtEffect(uint_t paramX, uint_t paramY, ChannelBuilder& target)
       {
         switch (paramX)
         {
