@@ -18,7 +18,7 @@ msgid "Failed to convert to ZX50 format."
 msgstr "A ZX50 formátumba konvertálás nem sikerült."
 
 msgid "Failed to convert to debug ay format."
-msgstr "A hibakereső AY formátumba konvertálás nem sikerült."
+msgstr "A hibakeresési AY formátumba konvertálás nem sikerült."
 
 msgid "Failed to convert to raw ay dump."
 msgstr "A nyers AY-dumpba konvertálás nem sikerült."
