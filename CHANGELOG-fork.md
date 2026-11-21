@@ -7,7 +7,7 @@ the `develop` branch of the original ZXTune
 ([vitamin-caig/zxtune](https://github.com/vitamin-caig/zxtune)). The
 changes of ZXTune itself are in the original repository.
 
-## Unreleased
+## r5112-hu.1 – 2026-11-18
 
 ### Hungarian interface
 
@@ -16,6 +16,8 @@ changes of ZXTune itself are in the original repository.
   Hungarian translation of Qt). It starts in the system language by
   default; the language can be chosen on the *Preferences > Interface* page.
 - The wording follows the common glossary of the ZX forks.
+- *Help > About* and `zxtune123 --version` show the version of the release
+  (`r5112-hu.1`).
 
 ### TurboSound
 

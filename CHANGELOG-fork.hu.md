@@ -7,7 +7,7 @@ az eredeti ZXTune `develop` ágához képest
 ([vitamin-caig/zxtune](https://github.com/vitamin-caig/zxtune)). Magának a
 ZXTune-nak a változásai az eredeti repóban vannak.
 
-## Kiadatlan
+## r5112-hu.1 – 2026-11-18
 
 ### Magyar felület
 
@@ -17,6 +17,8 @@ ZXTune-nak a változásai az eredeti repóban vannak.
   *Beállítások > Felület* lapon választható.
 - A szóhasználat a ZX-forkok közös szójegyzékét követi (pl. Leállítás,
   Némítás, Ismétlés, Bővítmények, Hangkimenetek).
+- A *Súgó > Névjegy* és a `zxtune123 --version` a kiadás verzióját mutatja
+  (`r5112-hu.1`).
 
 ### TurboSound
 
