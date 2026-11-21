@@ -181,13 +181,10 @@ namespace Formats::Chiptune
     const std::size_t MIN_SIZE = sizeof(Header);
 
     class StubChannelBuilder : public StubChannelBuilderImpl<SQDigitalTracker::ChannelBuilder>
-
     {
-
     public:
       void SetVolume(uint_t /*volume*/, int_t /*slideDirection*/) override {}
-
-      void SetVolumeSlidePeriod(uint_t period) override {}
+      void SetVolumeSlidePeriod(uint_t /*period*/) override {}
     };
 
     class StubBuilder : public Builder
@@ -347,7 +344,7 @@ namespace Formats::Chiptune
           Dbg("Parse pattern {}", patIndex);
           const Pattern& source = Source.Patterns[patIndex];
           PatternBuilder& patBuilder = target.StartPattern(patIndex);
-          ParsePattern(source, patBuilder, target);
+          ParsePattern(source, patBuilder);
         }
       }
 
@@ -411,7 +408,7 @@ namespace Formats::Chiptune
       }
 
     private:
-      static void ParsePattern(const Pattern& src, PatternBuilder& patBuilder, Builder& target)
+      static void ParsePattern(const Pattern& src, PatternBuilder& patBuilder)
       {
         const uint_t lastLine = MAX_PATTERN_SIZE - 1;
         for (uint_t lineNum = 0; lineNum <= lastLine; ++lineNum)

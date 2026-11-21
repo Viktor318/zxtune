@@ -149,10 +149,7 @@ namespace Formats::Chiptune
     const std::size_t MODULE_SIZE = sizeof(RawHeader) + PAGES_COUNT * ZX_PAGE_SIZE;
 
     class StubChannelBuilder : public StubChannelBuilderImpl<ProDigiTracker::ChannelBuilder>
-
     {
-
-    public:
     };
 
     class StubBuilder : public Builder

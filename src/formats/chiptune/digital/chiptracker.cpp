@@ -142,13 +142,10 @@ namespace Formats::Chiptune
     const std::size_t MIN_SIZE = sizeof(Header) + sizeof(Pattern) + 256;  // single pattern and single sample
 
     class StubChannelBuilder : public StubChannelBuilderImpl<ChipTracker::ChannelBuilder>
-
     {
-
     public:
-      void SetSlide(int_t step) override {}
-
-      void SetSampleOffset(uint_t offset) override {}
+      void SetSlide(int_t /*step*/) override {}
+      void SetSampleOffset(uint_t /*offset*/) override {}
     };
 
     class StubBuilder : public Builder
@@ -307,7 +304,7 @@ namespace Formats::Chiptune
           const uint_t patIndex = *it;
           Dbg("Parse pattern {}", patIndex);
           PatternBuilder& patBuilder = target.StartPattern(patIndex);
-          ParsePattern(patIndex, patBuilder, target);
+          ParsePattern(patIndex, patBuilder);
         }
       }
 
@@ -354,7 +351,7 @@ namespace Formats::Chiptune
       }
 
     private:
-      void ParsePattern(uint_t idx, PatternBuilder& patBuilder, Builder& target) const
+      void ParsePattern(uint_t idx, PatternBuilder& patBuilder) const
       {
         const std::size_t patStart = sizeof(Header) + idx * sizeof(Pattern);
         const auto* src = RawData.SubView(patStart).As<Pattern>();

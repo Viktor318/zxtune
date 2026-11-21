@@ -156,7 +156,7 @@ namespace Formats::Chiptune
           const uint_t patIndex = *it;
           Dbg("Parse pattern {}", patIndex);
           Digital::PatternBuilder& patBuilder = target.StartPattern(patIndex);
-          ParsePattern(Source.Patterns[patIndex], patBuilder, target);
+          ParsePattern(Source.Patterns[patIndex], patBuilder);
           AddFixedRange(offsetof(Header, Patterns) + patIndex * sizeof(Pattern), sizeof(Pattern));
         }
       }
@@ -199,7 +199,7 @@ namespace Formats::Chiptune
       }
 
     private:
-      static void ParsePattern(const Pattern& src, Digital::PatternBuilder& patBuilder, Builder& target)
+      static void ParsePattern(const Pattern& src, Digital::PatternBuilder& patBuilder)
       {
         const uint_t lastLine = MAX_PATTERN_SIZE - 1;
         for (uint_t lineNum = 0; lineNum <= lastLine; ++lineNum)

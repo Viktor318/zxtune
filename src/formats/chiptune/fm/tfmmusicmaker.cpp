@@ -438,53 +438,30 @@ namespace Formats::Chiptune
     static_assert(sizeof(Version13::RawHeader) * alignof(Version13::RawHeader) == 4341209, "Invalid layout");
 
     class StubChannelBuilder : public StubChannelBuilderImpl<TFMMusicMaker::ChannelBuilder>
-
     {
-
     public:
       void SetKeyOff() override {}
-
-      void SetInstrument(uint_t ins) override {}
-
-      void SetArpeggio(uint_t add1, uint_t add2) override {}
-
-      void SetSlide(int_t step) override {}
-
-      void SetPortamento(int_t step) override {}
-
-      void SetVibrato(uint_t speed, uint_t depth) override {}
-
-      void SetTotalLevel(uint_t op, uint_t value) override {}
-
-      void SetVolumeSlide(uint_t up, uint_t down) override {}
-
-      void SetSpecialMode(bool on) override {}
-
-      void SetToneOffset(uint_t op, uint_t offset) override {}
-
-      void SetMultiple(uint_t op, uint_t val) override {}
-
-      void SetOperatorsMixing(uint_t mask) override {}
-
+      void SetInstrument(uint_t /*ins*/) override {}
+      void SetArpeggio(uint_t /*add1*/, uint_t /*add2*/) override {}
+      void SetSlide(int_t /*step*/) override {}
+      void SetPortamento(int_t /*step*/) override {}
+      void SetVibrato(uint_t /*speed*/, uint_t /*depth*/) override {}
+      void SetTotalLevel(uint_t /*op*/, uint_t /*value*/) override {}
+      void SetVolumeSlide(uint_t /*up*/, uint_t /*down*/) override {}
+      void SetSpecialMode(bool /*on*/) override {}
+      void SetToneOffset(uint_t /*op*/, uint_t /*offset*/) override {}
+      void SetMultiple(uint_t /*op*/, uint_t /*val*/) override {}
+      void SetOperatorsMixing(uint_t /*mask*/) override {}
       void SetLoopStart() override {}
-
-      void SetLoopEnd(uint_t additionalCount) override {}
-
-      void SetPane(uint_t pane) override {}
-
-      void SetNoteRetrig(uint_t period) override {}
-
-      void SetNoteCut(uint_t quirk) override {}
-
-      void SetNoteDelay(uint_t quirk) override {}
-
+      void SetLoopEnd(uint_t /*additionalCount*/) override {}
+      void SetPane(uint_t /*pane*/) override {}
+      void SetNoteRetrig(uint_t /*period*/) override {}
+      void SetNoteCut(uint_t /*quirk*/) override {}
+      void SetNoteDelay(uint_t /*quirk*/) override {}
       void SetDropEffects() override {}
-
-      void SetFeedback(uint_t val) override {}
-
-      void SetTempoInterleave(uint_t val) override {}
-
-      void SetTempoValues(uint_t even, uint_t odd) override {}
+      void SetFeedback(uint_t /*val*/) override {}
+      void SetTempoInterleave(uint_t /*val*/) override {}
+      void SetTempoValues(uint_t /*even*/, uint_t /*odd*/) override {}
     };
 
     class StubBuilder : public Builder
@@ -854,7 +831,7 @@ namespace Formats::Chiptune
           const uint_t patSize = Source.PatternsSizes[patIndex];
           const typename Version::RawPattern& pattern = Source.Patterns[patIndex];
           PatternBuilder& patBuilder = builder.StartPattern(patIndex);
-          ParsePattern(patSize, pattern, patBuilder, builder);
+          ParsePattern(patSize, pattern, patBuilder);
         }
       }
 
@@ -880,8 +857,7 @@ namespace Formats::Chiptune
         return out;
       }
 
-      void ParsePattern(uint_t patSize, const typename Version::RawPattern& pattern, PatternBuilder& patBuilder,
-                        Builder& target) const
+      void ParsePattern(uint_t patSize, const typename Version::RawPattern& pattern, PatternBuilder& patBuilder) const
       {
         Line line;
         for (uint_t lineIdx = 0; lineIdx < patSize; ++lineIdx)

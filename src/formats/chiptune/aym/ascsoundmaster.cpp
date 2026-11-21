@@ -340,32 +340,19 @@ namespace Formats::Chiptune
                                             &HeaderTraits::Create<RawHeaderVer1>};
 
     class StubChannelBuilder : public StubChannelBuilderImpl<ASCSoundMaster::ChannelBuilder>
-
     {
-
     public:
-      void SetEnvelopeType(uint_t type) override {}
-
-      void SetEnvelopeTone(uint_t tone) override {}
-
+      void SetEnvelopeType(uint_t /*type*/) override {}
+      void SetEnvelopeTone(uint_t /*tone*/) override {}
       void SetEnvelope() override {}
-
       void SetNoEnvelope() override {}
-
-      void SetNoise(uint_t val) override {}
-
+      void SetNoise(uint_t /*val*/) override {}
       void SetContinueSample() override {}
-
       void SetContinueOrnament() override {}
-
-      void SetGlissade(int_t val) override {}
-
-      void SetSlide(int_t steps) override {}
-
-      void SetNoteSlide(int_t steps, bool useToneSliding) override {}
-
-      void SetVolumeSlide(uint_t period, int_t delta) override {}
-
+      void SetGlissade(int_t /*val*/) override {}
+      void SetSlide(int_t /*steps*/) override {}
+      void SetNoteSlide(int_t /*steps*/, bool /*useToneSliding*/) override {}
+      void SetVolumeSlide(uint_t /*period*/, int_t /*delta*/) override {}
       void SetBreakSample() override {}
     };
 

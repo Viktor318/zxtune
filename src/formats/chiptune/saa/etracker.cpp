@@ -82,17 +82,12 @@ namespace Formats::Chiptune
     static_assert(sizeof(RawPattern) * alignof(RawPattern) == 12, "Invalid layout");
 
     class StubChannelBuilder : public StubChannelBuilderImpl<ETracker::ChannelBuilder>
-
     {
-
     public:
-      void SetAttenuation(uint_t vol) override {}
-
-      void SetSwapSampleChannels(bool swapChannels) override {}
-
-      void SetEnvelope(uint_t value) override {}
-
-      void SetNoise(uint_t type) override {}
+      void SetAttenuation(uint_t /*vol*/) override {}
+      void SetSwapSampleChannels(bool /*swapChannels*/) override {}
+      void SetEnvelope(uint_t /*value*/) override {}
+      void SetNoise(uint_t /*type*/) override {}
     };
 
     class StubBuilder : public Builder

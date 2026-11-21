@@ -202,11 +202,9 @@ namespace Formats::Chiptune
     const std::size_t MODULE_SIZE = 0x1b800;
 
     class StubChannelBuilder : public StubChannelBuilderImpl<ExtremeTracker1::ChannelBuilder>
-
     {
-
     public:
-      void SetGliss(int_t gliss) override {}
+      void SetGliss(int_t /*gliss*/) override {}
     };
 
     class StubBuilder : public Builder

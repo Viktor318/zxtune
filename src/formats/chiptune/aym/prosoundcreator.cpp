@@ -271,29 +271,18 @@ namespace Formats::Chiptune
     static_assert(sizeof(RawSample) * alignof(RawSample) == 6, "Invalid layout");
 
     class StubChannelBuilder : public StubChannelBuilderImpl<ProSoundCreator::ChannelBuilder>
-
     {
-
     public:
-      void SetEnvelope(uint_t type, uint_t tone) override {}
-
+      void SetEnvelope(uint_t /*type*/, uint_t /*tone*/) override {}
       void SetEnvelope() override {}
-
       void SetNoEnvelope() override {}
-
-      void SetNoiseBase(uint_t val) override {}
-
+      void SetNoiseBase(uint_t /*val*/) override {}
       void SetBreakSample() override {}
-
       void SetBreakOrnament() override {}
-
       void SetNoOrnament() override {}
-
-      void SetGliss(uint_t absStep) override {}
-
-      void SetSlide(int_t delta) override {}
-
-      void SetVolumeSlide(uint_t period, int_t delta) override {}
+      void SetGliss(uint_t /*absStep*/) override {}
+      void SetSlide(int_t /*delta*/) override {}
+      void SetVolumeSlide(uint_t /*period*/, int_t /*delta*/) override {}
     };
 
     class StubBuilder : public Builder

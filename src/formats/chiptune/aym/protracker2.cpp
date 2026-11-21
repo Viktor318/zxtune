@@ -175,21 +175,14 @@ namespace Formats::Chiptune
     static_assert(sizeof(RawOrnament) * alignof(RawOrnament) == 2, "Invalid layout");
 
     class StubChannelBuilder : public StubChannelBuilderImpl<ProTracker2::ChannelBuilder>
-
     {
-
     public:
-      void SetGlissade(int_t val) override {}
-
-      void SetNoteGliss(int_t val, uint_t limit) override {}
-
+      void SetGlissade(int_t /*val*/) override {}
+      void SetNoteGliss(int_t /*val*/, uint_t /*limit*/) override {}
       void SetNoGliss() override {}
-
-      void SetEnvelope(uint_t type, uint_t value) override {}
-
+      void SetEnvelope(uint_t /*type*/, uint_t /*value*/) override {}
       void SetNoEnvelope() override {}
-
-      void SetNoiseAddon(int_t val) override {}
+      void SetNoiseAddon(int_t /*val*/) override {}
     };
 
     class StubBuilder : public Builder

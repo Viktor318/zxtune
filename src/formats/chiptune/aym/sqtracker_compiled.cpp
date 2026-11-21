@@ -154,23 +154,15 @@ namespace Formats::Chiptune
     static_assert(sizeof(RawHeader) * alignof(RawHeader) == 12, "Invalid layout");
 
     class StubChannelBuilder : public StubChannelBuilderImpl<SQTracker::ChannelBuilder>
-
     {
-
     public:
-      void SetTempoAddon(uint_t add) override {}
-
-      void SetEnvelope(uint_t type, uint_t value) override {}
-
-      void SetGlissade(int_t step) override {}
-
-      void SetAttenuation(uint_t att) override {}
-
-      void SetAttenuationAddon(int_t add) override {}
-
-      void SetGlobalAttenuation(uint_t att) override {}
-
-      void SetGlobalAttenuationAddon(int_t add) override {}
+      void SetTempoAddon(uint_t /*add*/) override {}
+      void SetEnvelope(uint_t /*type*/, uint_t /*value*/) override {}
+      void SetGlissade(int_t /*step*/) override {}
+      void SetAttenuation(uint_t /*att*/) override {}
+      void SetAttenuationAddon(int_t /*add*/) override {}
+      void SetGlobalAttenuation(uint_t /*att*/) override {}
+      void SetGlobalAttenuationAddon(int_t /*add*/) override {}
     };
 
     class StubBuilder : public Builder

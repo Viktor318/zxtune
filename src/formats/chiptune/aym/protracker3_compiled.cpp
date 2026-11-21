@@ -211,27 +211,17 @@ namespace Formats::Chiptune
     static_assert(sizeof(RawOrnament) * alignof(RawOrnament) == 2, "Invalid layout");
 
     class StubChannelBuilder : public StubChannelBuilderImpl<ProTracker3::ChannelBuilder>
-
     {
-
     public:
-      void SetGlissade(uint_t period, int_t val) override {}
-
-      void SetNoteGliss(uint_t period, int_t val, uint_t limit) override {}
-
-      void SetSampleOffset(uint_t offset) override {}
-
-      void SetOrnamentOffset(uint_t offset) override {}
-
-      void SetVibrate(uint_t ontime, uint_t offtime) override {}
-
-      void SetEnvelopeSlide(uint_t period, int_t val) override {}
-
-      void SetEnvelope(uint_t type, uint_t value) override {}
-
+      void SetGlissade(uint_t /*period*/, int_t /*val*/) override {}
+      void SetNoteGliss(uint_t /*period*/, int_t /*val*/, uint_t /*limit*/) override {}
+      void SetSampleOffset(uint_t /*offset*/) override {}
+      void SetOrnamentOffset(uint_t /*offset*/) override {}
+      void SetVibrate(uint_t /*ontime*/, uint_t /*offtime*/) override {}
+      void SetEnvelopeSlide(uint_t /*period*/, int_t /*val*/) override {}
+      void SetEnvelope(uint_t /*type*/, uint_t /*value*/) override {}
       void SetNoEnvelope() override {}
-
-      void SetNoiseBase(uint_t val) override {}
+      void SetNoiseBase(uint_t /*val*/) override {}
     };
 
     class StubBuilder : public Builder

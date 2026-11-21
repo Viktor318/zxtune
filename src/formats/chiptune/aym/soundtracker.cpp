@@ -515,7 +515,7 @@ namespace Formats::Chiptune
     class StubChannelBuilder : public StubChannelBuilderImpl<SoundTracker::ChannelBuilder>
     {
     public:
-      void SetEnvelope(uint_t type, uint_t value) override {}
+      void SetEnvelope(uint_t /*type*/, uint_t /*value*/) override {}
       void SetNoEnvelope() override {}
     };
 

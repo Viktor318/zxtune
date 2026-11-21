@@ -174,12 +174,9 @@ namespace Formats::Chiptune
     static_assert(sizeof(RawOrnament) * alignof(RawOrnament) == 1, "Invalid layout");
 
     class StubChannelBuilder : public StubChannelBuilderImpl<ProTracker1::ChannelBuilder>
-
     {
-
     public:
-      void SetEnvelope(uint_t type, uint_t value) override {}
-
+      void SetEnvelope(uint_t /*type*/, uint_t /*value*/) override {}
       void SetNoEnvelope() override {}
     };
 

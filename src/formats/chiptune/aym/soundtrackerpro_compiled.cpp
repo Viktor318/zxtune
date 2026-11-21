@@ -218,13 +218,10 @@ namespace Formats::Chiptune
     static_assert(sizeof(RawSamples) * alignof(RawSamples) == 30, "Invalid layout");
 
     class StubChannelBuilder : public StubChannelBuilderImpl<SoundTrackerPro::ChannelBuilder>
-
     {
-
     public:
-      void SetEnvelope(uint_t type, uint_t value) override {}
-
-      void SetGliss(int_t step) override {}
+      void SetEnvelope(uint_t /*type*/, uint_t /*value*/) override {}
+      void SetGliss(int_t /*step*/) override {}
     };
 
     class StubBuilder : public Builder

@@ -221,17 +221,12 @@ namespace Formats::Chiptune
     static_assert(sizeof(RawPattern) * alignof(RawPattern) == 7, "Invalid layout");
 
     class StubChannelBuilder : public StubChannelBuilderImpl<ProSoundMaker::ChannelBuilder>
-
     {
-
     public:
       void DisableOrnament() override {}
-
-      void SetEnvelopeReinit(bool enabled) override {}
-
-      void SetEnvelopeTone(uint_t type, uint_t tone) override {}
-
-      void SetEnvelopeNote(uint_t type, uint_t note) override {}
+      void SetEnvelopeReinit(bool /*enabled*/) override {}
+      void SetEnvelopeTone(uint_t /*type*/, uint_t /*tone*/) override {}
+      void SetEnvelopeNote(uint_t /*type*/, uint_t /*note*/) override {}
     };
 
     class StubBuilder : public Builder

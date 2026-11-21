@@ -326,21 +326,14 @@ namespace Formats::Chiptune
     static_assert(sizeof(RawSample::Line) * alignof(RawSample::Line) == 5, "Invalid layout");
 
     class StubChannelBuilder : public StubChannelBuilderImpl<FastTracker::ChannelBuilder>
-
     {
-
     public:
-      void SetEnvelope(uint_t type, uint_t tone) override {}
-
+      void SetEnvelope(uint_t /*type*/, uint_t /*tone*/) override {}
       void SetNoEnvelope() override {}
-
-      void SetNoise(uint_t val) override {}
-
+      void SetNoise(uint_t /*val*/) override {}
       void SetRetrig() override {}
-
-      void SetSlide(int_t step) override {}
-
-      void SetNoteSlide(uint_t step) override {}
+      void SetSlide(int_t /*step*/) override {}
+      void SetNoteSlide(uint_t /*step*/) override {}
     };
 
     class StubBuilder : public Builder

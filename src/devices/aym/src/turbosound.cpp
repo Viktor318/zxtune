@@ -151,6 +151,13 @@ namespace Devices::TurboSound
       return result;
     }
 
+    void UpdateState(const DataChunk& src) override
+    {
+      Require(Chunks.ConsumeBefore(src.TimeStamp).empty());
+      Clock.Forward(src.TimeStamp);
+      Psg.SetNewData(src.Data);
+    }
+
   private:
     void SynchronizeParameters()
     {
